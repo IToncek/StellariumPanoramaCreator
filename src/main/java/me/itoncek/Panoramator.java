@@ -21,20 +21,19 @@ import org.apache.http.message.BasicNameValuePair;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static java.lang.Thread.sleep;
 
 public class Panoramator {
 	public static Robot r;
 	
-	public static void main(String[] args) throws AWTException, InterruptedException {
+	public static void main(String[] args) throws AWTException, InterruptedException, IOException {
 		command("StelMovementMgr.zoomTo(60,0)");
 		r = new Robot();
 		r.setAutoDelay(10);
@@ -55,7 +54,7 @@ public class Panoramator {
 		File constellations = new File("C:\\Users\\user\\Pictures\\Stellarium\\panounor-zapad\\constellations");
 		File atmoclear = new File("C:\\Users\\user\\Pictures\\Stellarium\\panounor-zapad\\atmoclear");
 		File src = new File("C:\\Users\\user\\Pictures\\Stellarium\\panounor-zapad\\in");
-		
+		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\panounor-zapad");
 		for (File file : Arrays.asList(clear, constellations, atmoclear, src)) {
 			file.delete();
 			file.mkdir();
@@ -69,6 +68,17 @@ public class Panoramator {
 			}
 		}
 		
+		try (Scanner sc = new Scanner(new File("clear.pano"))) {
+			try (FileWriter fileWriter = new FileWriter(target.getAbsolutePath() + "\\clear.pano")) {
+				while (sc.hasNextLine()) {
+					String line = sc.nextLine();
+					line = line.replace("%replacetype%", "clear");
+					line = line.replace("%replaceFolder%", clear.getAbsolutePath());
+					line = line.replace("%replaceTargetFolder", target.getAbsolutePath());
+					fileWriter.write(line);
+				}
+			}
+		}
 		action("actionShow_Constellation_Lines");
 		
 		sleep(5000);
