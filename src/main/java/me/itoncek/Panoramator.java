@@ -65,7 +65,7 @@ public class Panoramator {
 //			capturePano( src, target, List.of(Action.LINES, Action.ATMOSPHERE), "lines", pb);
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.LINES, Action.ART, Action.ATMOSPHERE), "art", pb);
-			capturePano(src, target, List.of(Action.GROUND), "no-ground", pb);
+			capturePano(src, target, List.of(Action.GROUND, Action.ATMOSPHERE), "no-ground", pb);
 		}
 		
 	}
