@@ -2,7 +2,7 @@
 <pano>
     <version filemodel="2.0" application="Autopano Giga 4.4.2" id="84"/>
     <editorOptions initialAnchors="3" autoCCUpdate="1" autoCCAutoLevel="1" crossStayActivated="1" useRelativePath="0"/>
-    <finalRender basename="%replaceType%" path="%replaceTargetFolder%" fileType="psd" fileCompression="1" fileDepth="8" interpolationMode="2" blendMode="2" outputPercent="64" nCols="6000" nRows="3000" dpi="300" overwrite="1" fileEmbedAll="0" removeAlpha="0" outputPanorama="1" outputLayers="0" outputPictures="0" multibandLevel="-2" alphaDiamond="0" exposureWeights="1" cutting="1" graphcutGhostFocal="0" bracketedGhost="0"/>
+    <finalRender basename="%replaceType%" path="%replaceTargetFolder%" fileType="psd" fileCompression="1" fileDepth="8" interpolationMode="2" blendMode="1" outputPercent="64" nCols="6000" nRows="3000" dpi="300" overwrite="1" fileEmbedAll="0" removeAlpha="0" outputPanorama="1" outputLayers="0" outputPictures="0" multibandLevel="0" alphaDiamond="1" exposureWeights="0" cutting="0" graphcutGhostFocal="0" bracketedGhost="0"/>
     <layers>
         <layer name="N_0" ouput="1">
             <images>
