@@ -36,15 +36,12 @@ import static java.lang.Thread.sleep;
 
 public class Panoramator {
 	
-	public static void main(String[] args) throws InterruptedException, IOException {
+	public static void main(String[] args) throws InterruptedException {
 		command("StelMovementMgr.zoomTo(60,0)");
 		command("core.moveToAltAzi(20., 270., 0.)");
 		
-		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\calib");
+		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\pano-unor");
 		File src = new File(target.getAbsolutePath() + "\\in");
-		for (File tif : Objects.requireNonNull(target.listFiles((dir, name) -> name.endsWith("tif")))) {
-			tif.delete();
-		}
 		for (File file : Arrays.asList(target, src)) {
 			file.delete();
 			sleep(100);
@@ -54,27 +51,26 @@ public class Panoramator {
 				ProgressBar pb = new ProgressBarBuilder().setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK).setInitialMax(56).setUnit("image", 1).setTaskName("Taking pictures").setSpeedUnit(ChronoUnit.SECONDS).showSpeed().setMaxRenderedLength(200).build()) {
 //			date(LocalDateTime.of(2022,2,15,18,0,0),Speed.STOP);
 //			pbGlobal.step();
-//			capturePano( src, target, List.of(), "test", pb);
+//			capturePano( src, target, List.of(), "zapad-clear", pb);
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.LINES), "zapad-lines", pb);
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.ATMOSPHERE), "zapad-atmoclear", pb);
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.LINES, Action.ART), "zapad-art", pb);
-//			pbGlobal.step();
-			date(LocalDateTime.of(2022, 2, 16, 3, 0, 0), Speed.STOP);
-//			capturePano(src, target, List.of(Action.ATMOSPHERE), "clear", pb);
 			pbGlobal.step();
+			date(LocalDateTime.of(2022, 2, 16, 3, 0, 0), Speed.STOP);
+//			capturePano( src, target, List.of(Action.ATMOSPHERE), "clear", pb);
+//			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.LINES, Action.ATMOSPHERE), "lines", pb);
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.LINES, Action.ART, Action.ATMOSPHERE), "art", pb);
-			capturePano(src, target, List.of(Action.GROUND, Action.LINES, Action.ATMOSPHERE), "no-ground", pb);
+			capturePano(src, target, List.of(Action.GROUND, Action.ATMOSPHERE), "no-ground", pb);
 		}
-		
 		
 	}
 	
-	public static void capturePano(File source, File fintrg, List<Action> actions, String name, ProgressBar pb) throws InterruptedException, IOException {
+	public static void capturePano(File source, File fintrg, List<Action> actions, String name, ProgressBar pb) throws InterruptedException {
 		File target = new File(fintrg.getAbsolutePath() + "\\" + name);
 		target.mkdir();
 		pb.reset();
@@ -105,20 +101,22 @@ public class Panoramator {
 		for (Action action : actions) {
 			action("actionShow_" + action.action);
 		}
-		try (Scanner sc = new Scanner(new File("template.pto"));
-				FileWriter fileWriter = new FileWriter(fintrg.getAbsolutePath() + "\\" + name + ".pto")) {
-			while (sc.hasNextLine()) {
-				String line = sc.nextLine();
-				line = line.replace("%r%", target.getAbsolutePath());
-				fileWriter.write(line + "\n");
+		
+		try (Scanner sc = new Scanner(new File("template.pano"))) {
+			try (FileWriter fileWriter = new FileWriter(fintrg.getAbsolutePath() + "\\" + name + ".pano")) {
+				while (sc.hasNextLine()) {
+					String line = sc.nextLine();
+					line = line.replace("%replaceType%", name);
+					line = line.replace("%replaceFolder%", target.getAbsolutePath() + "\\");
+					line = line.replace("%replaceTargetFolder%", fintrg.getAbsolutePath() + "\\");
+					fileWriter.write(line + "\n");
+				}
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 		command("core.moveToAltAzi(20., 270., 0.)");
-		
-		Process p = Runtime.getRuntime().exec("\"D:\\hugin\\bin\\hugin_stitch_project.exe\" /d --output=\"" + fintrg.getAbsolutePath() + "\\" + name + "\" \"" + fintrg.getAbsolutePath() + "\\" + name + ".pto" + "\"");
-		p.waitFor();
+		sleep(5000);
 	}
 	
 	public static void capture(int alt, int az, File dest, File in) throws InterruptedException {
