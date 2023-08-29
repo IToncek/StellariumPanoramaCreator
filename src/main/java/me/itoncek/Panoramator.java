@@ -50,14 +50,15 @@ public class Panoramator {
 		try (ProgressBar pbGlobal = new ProgressBarBuilder().setStyle(ProgressBarStyle.ASCII).setInitialMax(1).setUnit("panoramas", 1).setSpeedUnit(ChronoUnit.SECONDS).setMaxRenderedLength(200).build();
 				ProgressBar pb = new ProgressBarBuilder().setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK).setInitialMax(56).setUnit("image", 1).setTaskName("Taking pictures").setSpeedUnit(ChronoUnit.SECONDS).showSpeed().setMaxRenderedLength(200).build()) {
 			date(LocalDateTime.of(2023,9,15,20,0,0),Speed.STOP);
-			capturePano( src, target, List.of(), "zapad-clear", pb);
-			pbGlobal.step();
-			capturePano( src, target, List.of(Action.LINES), "zapad-lines", pb);
-			pbGlobal.step();
-			capturePano( src, target, List.of(Action.ATMOSPHERE), "zapad-atmoclear", pb);
-			pbGlobal.step();
-			capturePano( src, target, List.of(Action.LINES, Action.ART), "zapad-art", pb);
-			pbGlobal.step();
+			System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//			capturePano( src, target, List.of(), "zapad-clear", pb);
+//			pbGlobal.step();
+//			capturePano( src, target, List.of(Action.LINES), "zapad-lines", pb);
+//			pbGlobal.step();
+//			capturePano( src, target, List.of(Action.ATMOSPHERE), "zapad-atmoclear", pb);
+//			pbGlobal.step();
+//			capturePano( src, target, List.of(Action.LINES, Action.ART), "zapad-art", pb);
+//			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.GROUND), "zapad-ng", pb);
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.GROUND,Action.ATMOSPHERE), "zapad-ng-na", pb);
@@ -66,15 +67,16 @@ public class Panoramator {
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.GROUND, Action.LINES, Action.ART), "zapad-ng-art", pb);
 //			pbGlobal.step();
-			date(LocalDateTime.of(2022, 2, 16, 3, 0, 0), Speed.STOP);
-			capturePano( src, target, List.of(Action.ATMOSPHERE), "clear", pb);
+			date(LocalDateTime.of(2022, 2, 16, 5, 40, 0), Speed.STOP);
+			capturePano( src, target, List.of(), "vychod-clear", pb);
 			pbGlobal.step();
-			capturePano( src, target, List.of(Action.LINES, Action.ATMOSPHERE), "lines", pb);
+			capturePano( src, target, List.of(Action.LINES), "vychod-lines", pb);
 			pbGlobal.step();
-			capturePano( src, target, List.of(Action.LINES, Action.ART, Action.ATMOSPHERE), "art", pb);
+			capturePano( src, target, List.of(Action.ATMOSPHERE), "vychod-atmoclear", pb);
 			pbGlobal.step();
-			capturePano(src, target, List.of(Action.GROUND, Action.ATMOSPHERE), "no-ground", pb);
+			capturePano( src, target, List.of(Action.LINES, Action.ART), "vychod-art", pb);
 			pbGlobal.step();
+
 		}
 		
 	}
