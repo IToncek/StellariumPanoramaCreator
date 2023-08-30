@@ -67,7 +67,7 @@ public class Panoramator {
 //			pbGlobal.step();
 //			capturePano( src, target, List.of(Action.GROUND, Action.LINES, Action.ART), "zapad-ng-art", pb);
 //			pbGlobal.step();
-			date(LocalDateTime.of(2022, 2, 16, 5, 40, 0), Speed.STOP);
+			date(LocalDateTime.of(2022, 9, 16, 5, 40, 0), Speed.STOP);
 			capturePano( src, target, List.of(), "vychod-clear", pb);
 			pbGlobal.step();
 			capturePano( src, target, List.of(Action.LINES), "vychod-lines", pb);
