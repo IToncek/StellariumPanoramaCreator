@@ -39,44 +39,34 @@ public class Panoramator {
 	public static void main(String[] args) throws InterruptedException {
 		command("StelMovementMgr.zoomTo(60,0)");
 		command("core.moveToAltAzi(20., 270., 0.)");
+		action("actionToggle_GuiHidden_Global");
 		
-		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\pano-zari");
+		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\pano-rijen");
 		File src = new File("C:\\Users\\user\\Pictures\\Stellarium\\input");
-		for (File file : Arrays.asList(target, src)) {
-			file.delete();
-			sleep(100);
-			file.mkdir();
-		}
-		try (ProgressBar pbGlobal = new ProgressBarBuilder().setStyle(ProgressBarStyle.ASCII).setInitialMax(1).setUnit("panoramas", 1).setSpeedUnit(ChronoUnit.SECONDS).setMaxRenderedLength(200).build();
-				ProgressBar pb = new ProgressBarBuilder().setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK).setInitialMax(56).setUnit("image", 1).setTaskName("Taking pictures").setSpeedUnit(ChronoUnit.SECONDS).showSpeed().setMaxRenderedLength(200).build()) {
-			date(LocalDateTime.of(2023,9,15,20,0,0),Speed.STOP);
-			System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//			capturePano( src, target, List.of(), "zapad-clear", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.LINES), "zapad-lines", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.ATMOSPHERE), "zapad-atmoclear", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.LINES, Action.ART), "zapad-art", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.GROUND), "zapad-ng", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.GROUND,Action.ATMOSPHERE), "zapad-ng-na", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.GROUND, Action.LINES, Action.ART,Action.ATMOSPHERE), "zapad-ng-na-art", pb);
-//			pbGlobal.step();
-//			capturePano( src, target, List.of(Action.GROUND, Action.LINES, Action.ART), "zapad-ng-art", pb);
-//			pbGlobal.step();
-			date(LocalDateTime.of(2022, 9, 16, 5, 40, 0), Speed.STOP);
-			capturePano( src, target, List.of(), "vychod-clear", pb);
-			pbGlobal.step();
-			capturePano( src, target, List.of(Action.LINES), "vychod-lines", pb);
-			pbGlobal.step();
-			capturePano( src, target, List.of(Action.ATMOSPHERE), "vychod-atmoclear", pb);
-			pbGlobal.step();
-			capturePano( src, target, List.of(Action.LINES, Action.ART), "vychod-art", pb);
-			pbGlobal.step();
+//		for (File file : Arrays.asList(target, src)) {
+//			file.delete();
+//			sleep(100);
+//			file.mkdir();
+//		}
+		try (ProgressBar pb = new ProgressBarBuilder().setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK).setInitialMax(56).setUnit("image", 1).setTaskName("Taking pictures").setSpeedUnit(ChronoUnit.SECONDS).showSpeed().setMaxRenderedLength(200).build()) {
+//			date(LocalDateTime.of(0,1,1,12,0,0),Speed.STOP);
+//			capturePano(src,target,List.of(),"calib",pb);
 
+			date(LocalDateTime.of(2023,10,15,19,0,0),Speed.STOP);
+//			capturePano( src, target, List.of(), "vecer-clear", pb);
+//			capturePano( src, target, List.of(Action.LINES), "vecer-lines", pb);
+			capturePano( src, target, List.of(Action.ATMOSPHERE,Action.GROUND), "vecer-atmoclear-ng", pb);
+//			capturePano( src, target, List.of(Action.LINES, Action.ART), "vecer-art", pb);
+//			date(LocalDateTime.of(2022, 10, 16, 0, 0, 0), Speed.STOP);
+//			capturePano( src, target, List.of(), "pulnoc-clear", pb);
+//			capturePano( src, target, List.of(Action.LINES), "pulnoc-lines", pb);
+//			capturePano( src, target, List.of(Action.ATMOSPHERE), "pulnoc-atmoclear", pb);
+//			capturePano( src, target, List.of(Action.LINES, Action.ART), "pulnoc-art", pb);
+//			date(LocalDateTime.of(2022, 10, 16, 6, 30, 0), Speed.STOP);
+//			capturePano( src, target, List.of(), "rano-clear", pb);
+//			capturePano( src, target, List.of(Action.LINES), "rano-lines", pb);
+//			capturePano( src, target, List.of(Action.ATMOSPHERE), "rano-atmoclear", pb);
+//			capturePano( src, target, List.of(Action.LINES, Action.ART), "rano-art", pb);
 		}
 		
 	}
@@ -134,7 +124,7 @@ public class Panoramator {
 		command("core.moveToAltAzi(" + alt + "., " + az + "., 0.)");
 		sleep(50);
 		action("actionSave_Screenshot_Global");
-		sleep(100);
+		sleep(50);
 		int i = 0;
 		
 		for (File file : Objects.requireNonNull(in.listFiles())) {
@@ -218,5 +208,7 @@ public class Panoramator {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
+	private static class Panorama {
+	}
 }
