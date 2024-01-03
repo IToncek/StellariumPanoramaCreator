@@ -69,7 +69,7 @@ public class Panoramator {
 	public static void main(String[] args) throws InterruptedException, IOException, FontFormatException {
 		command("StelMovementMgr.zoomTo(100,0)");
 		//move(20,270);
-		//command("core.moveToAltAzi(20., 270., 0.)");
+		command("core.moveToAltAzi(20., 270., 0.)");
 		action("actionToggle_GuiHidden_Global");
 
 		Runtime.getRuntime().addShutdownHook(new Thread(()->{
@@ -89,13 +89,13 @@ public class Panoramator {
 //			action("actionShow_" + action.action);
 //		}
 
-//		capturePano(src,target,"0");
+//		capturePano(src,target,"test");
 //
 //		//Show planets
 //		for (Action action : List.of(Action.PLANETS)) {
 //			action("actionShow_" + action.action);
 //		}
-
+//
 		slideTo(src,target,LocalDateTime.of(2024,1,8,7,12,53),
 				LocalDateTime.of(2024,1,14,17,15),
 				250);
@@ -109,11 +109,12 @@ public class Panoramator {
 		double endHours = fractionalPart(julian(end));
 
 		for (int step = 0; step <= steps; step++) {
-			double ratio = (step + 0d)/steps;
+			double ratio = EaseInOut((step + 0d)/steps);
 			long days = Math.round(Math.floor(lerp(startDays,endDays,ratio)));
 			double hours = lerp(startHours,endHours,ratio);
 
 			setJD(days+hours);
+//			sleep(50);
 			captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(days+hours), step);
 			capturePano(source, fintrg, step + "");
 		}
@@ -131,21 +132,6 @@ public class Panoramator {
 		graphics.dispose();
 	}
 
-	private static long integerPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.intValue();
-	};
-
-	private static double fractionalPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.subtract(new BigDecimal(integerPart(julian))).doubleValue();
-	}
-
-	// Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
-	// Lerping between same values might not produce the same value
-	public static double lerp(double v0, double v1, double t) {
-		return (1d - t) * v0 + t * v1;
-	}
 	
 	public static void capturePano(File source, File fintrg, String name) throws InterruptedException {
 		File target = new File(fintrg.getAbsolutePath() + "\\" + name);
@@ -157,12 +143,11 @@ public class Panoramator {
 			capture(rotation.alt(),rotation.azi(),target,source, rotation.dir());
 		}
 		
-		try (Scanner sc = new Scanner(new File("template.pano"))) {
-			try (FileWriter fileWriter = new FileWriter(fintrg.getAbsolutePath() + "\\" + name + ".pano")) {
+		try (Scanner sc = new Scanner(new File("template.pto"))) {
+			try (FileWriter fileWriter = new FileWriter(fintrg.getAbsolutePath() + "\\" + name + ".pto")) {
 				while (sc.hasNextLine()) {
 					String line = sc.nextLine();
-					line = line.replace("%prf%", target.getAbsolutePath() + "\\")
-							.replace("%name%", name);
+					line = line.replace("%prf%", target.getAbsolutePath() + "\\");
 					fileWriter.write(line + "\n");
 				}
 			}
@@ -288,6 +273,40 @@ public class Panoramator {
 		}
 	}
 
-	private static class Panorama {
+
+	private static long integerPart(double julian) {
+		BigDecimal temp = new BigDecimal(julian);
+		return temp.intValue();
+	};
+
+	private static double fractionalPart(double julian) {
+		BigDecimal temp = new BigDecimal(julian);
+		return temp.subtract(new BigDecimal(integerPart(julian))).doubleValue();
+	}
+
+	public static double EaseIn(double t)
+	{
+		return Math.pow(t,2);
+	}
+
+	static double Flip(double x)
+	{
+		return 1 - x;
+	}
+
+	public static double EaseOut(double t)
+	{
+		return Flip(Math.pow(Flip(t), 2));
+	}
+
+	public static double EaseInOut(double t)
+	{
+		return lerp(EaseIn(t), EaseOut(t), t);
+	}
+
+	// Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
+	// Lerping between same values might not produce the same value
+	public static double lerp(double v0, double v1, double t) {
+		return (1d - t) * v0 + t * v1;
 	}
 }

@@ -1,7 +1,7 @@
 # hugin project file
 #hugin_ptoversion 2
-p f2 w6000 h3000 v360  k0 E0 R0 n"TIFF_m c:LZW r:CROP"
-m i7
+p f2 w6000 h3000 v360  k3 E0 R0 n"TIFF_m c:LZW r:CROP"
+m i4
 
 # image lines
 #-hugin  cropFactor=1
@@ -24,6 +24,7 @@ v Rb0
 v Rc0
 v Rd0
 v Re0
+v Eev0
 v Vb0
 v Vc0
 v Vd0
@@ -35,7 +36,6 @@ v Eev2
 v r2
 v p2
 v y2
-v Eev3
 v r3
 v p3
 v y3
@@ -58,7 +58,7 @@ v
 #hugin_enblendOptions 
 #hugin_enfuseOptions 
 #hugin_hdrmergeOptions -m avg -c
-#hugin_verdandiOptions 
+#hugin_verdandiOptions --seam=blend
 #hugin_edgeFillMode 0
 #hugin_edgeFillKeepInput false
 #hugin_outputLDRBlended true
