@@ -20,17 +20,16 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import space.itoncek.lerper.Lerp5D;
+import space.itoncek.lerper.Snapshot5D;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +41,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
 
 import static java.lang.Thread.sleep;
 
@@ -67,9 +65,9 @@ public class Panoramator {
 	}
 
 	public static void main(String[] args) throws InterruptedException, IOException, FontFormatException {
-		command("StelMovementMgr.zoomTo(100,0)");
+		//command("StelMovementMgr.zoomTo(100,0)");
 		//move(20,270);
-		command("core.moveToAltAzi(20., 270., 0.)");
+		//command("core.moveToAltAzi(20., 270., 0.)");
 		action("actionToggle_GuiHidden_Global");
 
 		Runtime.getRuntime().addShutdownHook(new Thread(()->{
@@ -96,9 +94,28 @@ public class Panoramator {
 //			action("actionShow_" + action.action);
 //		}
 //
-		slideTo(src,target,LocalDateTime.of(2024,1,8,7,12,53),
-				LocalDateTime.of(2024,1,14,17,15),
-				250);
+		slideTo(src,target,LocalDateTime.of(2024,1,8,6,46),
+				LocalDateTime.of(2024,1,14,17,15,00),
+				500);
+//		midpoint(LocalDateTime.of(2024,1,8,6,46),
+//				LocalDateTime.of(2024,1,14,17,15,00));
+	}
+
+	public static void midpoint(LocalDateTime start, LocalDateTime end) throws IOException {
+		long startDays = integerPart(julian(start));
+		long endDays = integerPart(julian(end));
+
+		double startHours = fractionalPart(julian(start));
+		double endHours = fractionalPart(julian(end));
+
+		Snapshot5D snapshot5D = Lerp5D.interpolateDirect(
+				new Snapshot5D(145.9676, 9.1711, 16, startDays, startHours),
+				new Snapshot5D(216.4507, 11.0995, 40, endDays, endHours),
+				.5
+		);
+		setJD(snapshot5D.day() + snapshot5D.hour());
+		move(snapshot5D.alt(), snapshot5D.azi());
+		zoom(snapshot5D.fov());
 	}
 
 	public static void slideTo(File source, File fintrg, LocalDateTime start, LocalDateTime end, int steps) throws IOException, InterruptedException, FontFormatException {
@@ -108,16 +125,32 @@ public class Panoramator {
 		double startHours = fractionalPart(julian(start));
 		double endHours = fractionalPart(julian(end));
 
-		for (int step = 0; step <= steps; step++) {
-			double ratio = EaseInOut((step + 0d)/steps);
-			long days = Math.round(Math.floor(lerp(startDays,endDays,ratio)));
-			double hours = lerp(startHours,endHours,ratio);
-
-			setJD(days+hours);
-//			sleep(50);
-			captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(days+hours), step);
-			capturePano(source, fintrg, step + "");
+		try(ProgressBar pb = new ProgressBar("Lerpin'", steps)) {
+			for (int step = 0; step < steps; step++) {
+				Snapshot5D snapshot5D = Lerp5D.interpolateMidpoint(
+						new Snapshot5D(145.9676, 9.1711, 16, startDays, startHours),
+						new Snapshot3D(180.7856,27.6666, 75),
+						new Snapshot5D(216.4507, 11.0995, 40, endDays, endHours),
+						step / (steps + 0d)
+				);
+				setJD(snapshot5D.day() + snapshot5D.hour());
+				move(snapshot5D.alt(), snapshot5D.azi());
+				zoom(snapshot5D.fov());
+				bareCapture(fintrg,source,step+"");
+				sleep(20);
+				pb.step();
+			}
 		}
+
+//		for (int step = 0; step <= steps; step++) {
+//			double ratio = EaseInOut((step + 0d)/steps);
+//			long days = Math.round(Math.floor(lerp(startDays,endDays,ratio)));
+//			double hours = lerp(startHours,endHours,ratio);
+//
+//			setJD(days+hours);
+////			sleep(50);
+//			//captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(days+hours), step);
+//		}
 	}
 
 	private static void captureTimestamp(File f, LocalDateTime t, int step) throws IOException, FontFormatException {
@@ -132,27 +165,23 @@ public class Panoramator {
 		graphics.dispose();
 	}
 
-	
-	public static void capturePano(File source, File fintrg, String name) throws InterruptedException {
-		File target = new File(fintrg.getAbsolutePath() + "\\" + name);
-		target.mkdir();
+	public static void bareCapture(File dest, File in, String name) throws InterruptedException {
+		sleep(100);
+		action("actionSave_Screenshot_Global");
+		sleep(100);
+		int i = 0;
 
-		List<Rotation> rotations = Rotation.generateCubemapRotations();
-
-		for (Rotation rotation : ProgressBar.wrap(rotations,pbb)) {
-			capture(rotation.alt(),rotation.azi(),target,source, rotation.dir());
-		}
-		
-		try (Scanner sc = new Scanner(new File("template.pto"))) {
-			try (FileWriter fileWriter = new FileWriter(fintrg.getAbsolutePath() + "\\" + name + ".pto")) {
-				while (sc.hasNextLine()) {
-					String line = sc.nextLine();
-					line = line.replace("%prf%", target.getAbsolutePath() + "\\");
-					fileWriter.write(line + "\n");
+		for (File file : Objects.requireNonNull(in.listFiles())) {
+			try {
+				String suffix = "";
+				if(i > 0) {
+					suffix = "(" + i + ")";
 				}
+				Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
+				i++;
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 	
@@ -177,8 +206,11 @@ public class Panoramator {
 		}
 	}
 
-	public static void move(int alt, int az) {
-		command(String.format("core.moveToAltAzi(%d., %d., 0.)", alt,az));
+	public static void move(double alt, double az) {
+		command(String.format("core.moveToAltAzi(%f, %f, 0.)", alt,az));
+	}
+	public static void zoom(double fov) {
+		command("StelMovementMgr.zoomTo(%f,0)".formatted(fov));
 	}
 
 	public static void command(String command) {
