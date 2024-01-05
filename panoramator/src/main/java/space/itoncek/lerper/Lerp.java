@@ -2,23 +2,19 @@ package space.itoncek.lerper;
 
 public class Lerp {
 
-    public static double EaseIn(double t)
-    {
-        return Math.pow(t,2);
+    public static double EaseIn(double t) {
+        return Math.pow(t, 2);
     }
 
-    public static double Flip(double x)
-    {
+    public static double Flip(double x) {
         return 1 - x;
     }
 
-    public static double EaseOut(double t)
-    {
+    public static double EaseOut(double t) {
         return Flip(Math.pow(Flip(t), 2));
     }
 
-    public static double EaseInOut(double t)
-    {
+    public static double EaseInOut(double t) {
         return lerp(EaseIn(t), EaseOut(t), t);
     }
 
@@ -26,5 +22,10 @@ public class Lerp {
     // Lerping between same values might not produce the same value
     public static double lerp(double v0, double v1, double t) {
         return (1d - t) * v0 + t * v1;
+    }
+
+    public static class LerpException extends Throwable {
+        public LerpException(String msg) {
+        }
     }
 }

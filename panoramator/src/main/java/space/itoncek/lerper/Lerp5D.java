@@ -1,36 +1,41 @@
 package space.itoncek.lerper;
 
+import org.jetbrains.annotations.NotNull;
 import space.itoncek.Snapshot3D;
 
-import static space.itoncek.lerper.Lerp.*;
+import static space.itoncek.lerper.Lerp.EaseInOut;
+import static space.itoncek.lerper.Lerp.lerp;
 
 public class Lerp5D {
-    public static Snapshot5D interpolateDirect(Snapshot5D start, Snapshot5D end, double ratio) {
+    public static @NotNull Snapshot5D interpolateDirect(@NotNull Snapshot5D start, @NotNull Snapshot5D end, double ratio) {
         double eased = EaseInOut(ratio);
 
         double azi = lerp(start.azi(), end.azi(), eased);
         double alt = lerp(start.alt(), end.alt(), eased);
         double fov = lerp(start.fov(), end.fov(), eased);
-        long day = Math.round(Math.floor(lerp(start.day(), end.day(), eased)));
+        long day = Math.round(Math.floor(lerp(start.day()+.5, end.day()+.5, eased)));
         double hour = lerp(start.hour(), end.hour(), eased);
 
-        return new Snapshot5D(azi,alt,fov,day,hour);
+        return new Snapshot5D(azi, alt, fov, day, hour);
     }
+
     public static Snapshot5D interpolateMidpoint(Snapshot5D start, Snapshot3D mid, Snapshot5D end, double ratio) {
         double eased = EaseInOut(ratio);
-        long day = Math.round(Math.floor(lerp(start.day(), end.day(), eased)));
+        long day = Math.round(Math.floor(lerp(start.day()+.5, end.day()+.5, eased)));
         double hour = lerp(start.hour(), end.hour(), eased);
         double azi, alt, fov;
 
-        if(ratio < .5) {
-            azi = lerp(start.azi(), mid.azi(), eased);
-            alt = lerp(start.alt(), mid.alt(), eased);
-            fov = lerp(start.fov(), mid.fov(), eased);
+        if (ratio < .5) {
+            double preeased = EaseInOut(ratio * 2);
+            azi = lerp(start.azi(), mid.azi(), preeased);
+            alt = lerp(start.alt(), mid.alt(), preeased);
+            fov = lerp(start.fov(), mid.fov(), preeased);
         } else {
-            azi = lerp(mid.azi(), end.azi(), eased);
-            alt = lerp(mid.alt(), end.alt(), eased);
-            fov = lerp(mid.fov(), end.fov(), eased);
+            double preeased = EaseInOut((ratio * 2d) - 1);
+            azi = lerp(mid.azi(), end.azi(), preeased);
+            alt = lerp(mid.alt(), end.alt(), preeased);
+            fov = lerp(mid.fov(), end.fov(), preeased);
         }
-        return new Snapshot5D(azi,alt,fov,day, hour);
+        return new Snapshot5D(azi, alt, fov, day, hour);
     }
 }

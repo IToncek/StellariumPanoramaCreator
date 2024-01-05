@@ -20,6 +20,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import space.itoncek.lerper.Lerp;
 import space.itoncek.lerper.Lerp5D;
 import space.itoncek.lerper.Snapshot5D;
 
@@ -45,42 +46,42 @@ import java.util.Objects;
 import static java.lang.Thread.sleep;
 
 public class Panoramator {
-	public static ProgressBarBuilder pbb = new ProgressBarBuilder()
-			.setTaskName("Capturing panorama")
-			.setMaxRenderedLength(150)
-			.setUnit("images",1)
-			.setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK)
-			.setSpeedUnit(ChronoUnit.SECONDS);
+    public static ProgressBarBuilder pbb = new ProgressBarBuilder()
+            .setTaskName("Capturing panorama")
+            .setMaxRenderedLength(150)
+            .setUnit("images", 1)
+            .setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK)
+            .setSpeedUnit(ChronoUnit.SECONDS);
 
-	public static Font fnt;
+    public static Font fnt;
 
-	static {
-		try {
-			fnt = Font.createFont(Font.TRUETYPE_FONT, new URL("https://cdn.itoncek.space/fonts/VCR_OSD_MONO-Regular.ttf").openStream());
-		} catch (FontFormatException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    static {
+        try {
+            fnt = Font.createFont(Font.TRUETYPE_FONT, new URL("https://cdn.itoncek.space/fonts/VCR_OSD_MONO-Regular.ttf").openStream());
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static void main(String[] args) throws InterruptedException, IOException, FontFormatException {
-		//command("StelMovementMgr.zoomTo(100,0)");
-		//move(20,270);
-		//command("core.moveToAltAzi(20., 270., 0.)");
-		action("actionToggle_GuiHidden_Global");
+    public static void main(String[] args) throws InterruptedException, IOException, FontFormatException, Lerp.LerpException {
+//        command("StelMovementMgr.zoomTo(100,0)");
+//        move(20,270);
+//        command("core.moveToAltAzi(20., 270., 0.)");
+//		action("actionToggle_GuiHidden_Global");
+//
+//		Runtime.getRuntime().addShutdownHook(new Thread(()->{
+//			action("actionToggle_GuiHidden_Global");
+//		}));
 
-		Runtime.getRuntime().addShutdownHook(new Thread(()->{
-			action("actionToggle_GuiHidden_Global");
-		}));
-
-		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\output");
-		File src = new File("C:\\Users\\user\\Pictures\\Stellarium\\input");
-		target.mkdirs();
-		src.mkdirs();
-		for (File file : src.listFiles()) {
-			file.delete();
-		}
+        File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\output");
+        File src = new File("C:\\Users\\user\\Pictures\\Stellarium\\input");
+        target.mkdirs();
+        src.mkdirs();
+        for (File file : src.listFiles()) {
+            file.delete();
+        }
 
 //		//Hide planets
 //		for (Action action : List.of(Action.PLANETS)) {
@@ -94,11 +95,56 @@ public class Panoramator {
 //			action("actionShow_" + action.action);
 //		}
 //
-		slideTo(src,target,LocalDateTime.of(2024,1,8,6,46),
-				LocalDateTime.of(2024,1,14,17,15,00),
-				500);
-//		midpoint(LocalDateTime.of(2024,1,8,6,46),
-//				LocalDateTime.of(2024,1,14,17,15,00));
+
+		//A
+//        slideTo(src, target, LocalDateTime.of(2024, 1, 8, 6, 46),
+//                LocalDateTime.of(2024, 1, 14, 17, 15, 00),
+//                500,
+//				new Snapshot3D(145.9676, 9.1711, 16),
+//				new Snapshot3D(216.4507, 11.0995, 40));
+
+
+		//B
+        slideTo(src, target, LocalDateTime.of(2024, 1, 14, 17, 15, 00),
+				LocalDateTime.of(2024,1,18,21,30,00),
+                500,
+				new Snapshot3D(216.4507, 11.0995, 40),
+				new Snapshot3D(242.8905,37.5064,4));
+    }
+
+    public static void slideTo(File source, File fintrg, LocalDateTime start, LocalDateTime end, long steps, Snapshot3D in, Snapshot3D out) throws IOException, InterruptedException, FontFormatException, Lerp.LerpException {
+		long startDays = integerPart(julian(start));
+		long endDays = integerPart(julian(end));
+
+		double startHours = fractionalPart(julian(start));
+		double endHours = fractionalPart(julian(end));
+
+		try (ProgressBar pb = new ProgressBar("Lerpin'", steps)) {
+			for (long step = 0; step <= steps; step++) {
+				Snapshot5D snapshot5D = Lerp5D.interpolateDirect(
+						in.convertTo5D(start),
+						out.convertTo5D(end),
+						step / Double.valueOf(steps)
+				);
+				setJD(snapshot5D.day() + snapshot5D.hour());
+				move(snapshot5D.alt(), snapshot5D.azi());
+				zoom(snapshot5D.fov());
+				captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(snapshot5D.day() + snapshot5D.hour()), step);
+				bareCapture(fintrg, source, step + "");
+				sleep(20);
+				pb.setExtraMessage(String.valueOf(step / Double.valueOf(steps)));
+				pb.step();
+			}
+		}
+//		for (long step = 0; step <= steps; step++) {
+//			double ratio = EaseInOut((step + 0d)/steps);
+//			long days = Math.round(Math.floor(lerp(startDays,endDays,ratio)));
+//			double hours = lerp(startHours,endHours,ratio);
+//
+//			setJD(days+hours);
+////			sleep(50);
+//			//captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(days+hours), step);
+//		}
 	}
 
 	public static void midpoint(LocalDateTime start, LocalDateTime end) throws IOException {
@@ -118,136 +164,105 @@ public class Panoramator {
 		zoom(snapshot5D.fov());
 	}
 
-	public static void slideTo(File source, File fintrg, LocalDateTime start, LocalDateTime end, int steps) throws IOException, InterruptedException, FontFormatException {
-		long startDays = integerPart(julian(start));
-		long endDays = integerPart(julian(end));
+    private static void captureTimestamp(File f, LocalDateTime t, long step) throws IOException, FontFormatException {
+        f.mkdirs();
+        BufferedImage image = new BufferedImage(650, 70, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = image.createGraphics();
+        graphics.setFont(fnt.deriveFont(50f));
+        String st = t.format(DateTimeFormatter.ofPattern("dd.MM.YY - HH:mm:ss"));
+        LineMetrics lineMetrics = fnt.deriveFont(40f).getLineMetrics(st, graphics.getFontRenderContext());
+        graphics.drawString(st, 10, 10 + lineMetrics.getHeight());
+        ImageIO.write(image, "png", new File(f + "/" + step + ".png"));
+        graphics.dispose();
+    }
 
-		double startHours = fractionalPart(julian(start));
-		double endHours = fractionalPart(julian(end));
+    public static void bareCapture(File dest, File in, String name) throws InterruptedException {
+        sleep(100);
+        action("actionSave_Screenshot_Global");
+        sleep(100);
+        long i = 0;
 
-		try(ProgressBar pb = new ProgressBar("Lerpin'", steps)) {
-			for (int step = 0; step < steps; step++) {
-				Snapshot5D snapshot5D = Lerp5D.interpolateMidpoint(
-						new Snapshot5D(145.9676, 9.1711, 16, startDays, startHours),
-						new Snapshot3D(180.7856,27.6666, 75),
-						new Snapshot5D(216.4507, 11.0995, 40, endDays, endHours),
-						step / (steps + 0d)
-				);
-				setJD(snapshot5D.day() + snapshot5D.hour());
-				move(snapshot5D.alt(), snapshot5D.azi());
-				zoom(snapshot5D.fov());
-				bareCapture(fintrg,source,step+"");
-				sleep(20);
-				pb.step();
-			}
-		}
+        for (File file : Objects.requireNonNull(in.listFiles())) {
+            try {
+                String suffix = "";
+                if (i > 0) {
+                    suffix = "(" + i + ")";
+                }
+                Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
+                i++;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
-//		for (int step = 0; step <= steps; step++) {
-//			double ratio = EaseInOut((step + 0d)/steps);
-//			long days = Math.round(Math.floor(lerp(startDays,endDays,ratio)));
-//			double hours = lerp(startHours,endHours,ratio);
-//
-//			setJD(days+hours);
-////			sleep(50);
-//			//captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(days+hours), step);
-//		}
-	}
+    public static void capture(long alt, long az, File dest, File in, String name) throws InterruptedException {
+        move(alt, az);
+        sleep(50);
+        action("actionSave_Screenshot_Global");
+        sleep(50);
+        long i = 0;
 
-	private static void captureTimestamp(File f, LocalDateTime t, int step) throws IOException, FontFormatException {
-		f.mkdirs();
-		BufferedImage image = new BufferedImage(650,70, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D graphics = image.createGraphics();
-		graphics.setFont(fnt.deriveFont(50f));
-		String st = t.format(DateTimeFormatter.ofPattern("dd.MM.YY - HH:mm:ss"));
-		LineMetrics lineMetrics = fnt.deriveFont(40f).getLineMetrics(st, graphics.getFontRenderContext());
-		graphics.drawString(st,10, 10+lineMetrics.getHeight());
-		ImageIO.write(image,"png", new File(f + "/" + step + ".png"));
-		graphics.dispose();
-	}
+        for (File file : Objects.requireNonNull(in.listFiles())) {
+            try {
+                String suffix = "";
+                if (i > 0) {
+                    suffix = "(" + i + ")";
+                }
+                Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
+                i++;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
-	public static void bareCapture(File dest, File in, String name) throws InterruptedException {
-		sleep(100);
-		action("actionSave_Screenshot_Global");
-		sleep(100);
-		int i = 0;
+    public static void move(double alt, double az) {
+        command(String.format("core.moveToAltAzi(%f, %f, 0.)", alt, az));
+    }
 
-		for (File file : Objects.requireNonNull(in.listFiles())) {
-			try {
-				String suffix = "";
-				if(i > 0) {
-					suffix = "(" + i + ")";
-				}
-				Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
-				i++;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-	
-	public static void capture(int alt, int az, File dest, File in, String name) throws InterruptedException {
-		move(alt,az);
-		sleep(50);
-		action("actionSave_Screenshot_Global");
-		sleep(50);
-		int i = 0;
-		
-		for (File file : Objects.requireNonNull(in.listFiles())) {
-			try {
-				String suffix = "";
-				if(i > 0) {
-					suffix = "(" + i + ")";
-				}
-				Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
-				i++;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
+    public static void zoom(double fov) {
+        command("StelMovementMgr.zoomTo(%f,0)".formatted(fov));
+    }
 
-	public static void move(double alt, double az) {
-		command(String.format("core.moveToAltAzi(%f, %f, 0.)", alt,az));
-	}
-	public static void zoom(double fov) {
-		command("StelMovementMgr.zoomTo(%f,0)".formatted(fov));
-	}
+    public static void command(String command) {
+        try {
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost("http://192.168.99.64:8090/api/scripts/direct");
 
-	public static void command(String command) {
-		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/scripts/direct");
+            // add header
+            List<NameValuePair> urlParameters = new ArrayList<>();
+            urlParameters.add(new BasicNameValuePair("code", command));
+            urlParameters.add(new BasicNameValuePair("useIncludes", "false"));
 
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("code", command));
-			urlParameters.add(new BasicNameValuePair("useIncludes", "false"));
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            post.setHeader("Origin", "http://localhost:8090");
 
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
+            client.execute(post);
 
-			client.execute(post);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public static double julian(LocalDateTime date) {
+        ZonedDateTime d = date.atZone(ZoneId.of("Europe/Prague"));
+        ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
+        long secs = ChronoUnit.SECONDS.between(jul, d);
+        return (secs / 86400d) + 38;
+    }
 
-	public static double julian(LocalDateTime date) {
-		ZonedDateTime d = date.atZone(ZoneId.of("Europe/Prague"));
-		ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
-		long secs = ChronoUnit.SECONDS.between(jul, d);
-		return (secs / 86400d) + 38;
-	}
-
-	public static LocalDateTime unJulian(double julian) {
-		long seconds = Math.round((julian - 38)*86400);
-		ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
-		return jul.toLocalDateTime().plus(seconds, ChronoUnit.SECONDS);
-	}
+    public static LocalDateTime unJulian(double julian) {
+        long seconds = Math.round((julian - 38) * 86400);
+        ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
+        return jul.toLocalDateTime().plus(seconds, ChronoUnit.SECONDS);
+    }
 
 	public static void setJD(double jd) throws IOException {
+		setJD(jd,Speed.STOP);
+	}
+    public static void setJD(double jd , Speed rate) throws IOException {
 		//System.out.println(days);
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost("http://192.168.99.64:8090/api/main/time");
@@ -255,90 +270,77 @@ public class Panoramator {
 		// add header
 		List<NameValuePair> urlParameters = new ArrayList<>();
 		urlParameters.add(new BasicNameValuePair("time", String.valueOf(jd)));
-		urlParameters.add(new BasicNameValuePair("timerate", String.valueOf(Speed.STOP)));
+		urlParameters.add(new BasicNameValuePair("timerate", String.valueOf(rate.getSpeed())));
 
 		post.setEntity(new UrlEncodedFormEntity(urlParameters));
 		post.setHeader("Content-Type", "application/x-www-form-urlencoded");
 		post.setHeader("Origin", "http://localhost:8090");
 
 		client.execute(post);
-	}
+    }
 
-	public static void date(LocalDateTime date, Speed rate) {
+    public static void date(LocalDateTime date, Speed rate) {
 		try {
-			//System.out.println(days);
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/main/time");
-
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("time", String.valueOf(julian(date))));
-			urlParameters.add(new BasicNameValuePair("timerate", String.valueOf(rate.getSpeed())));
-
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-
-			client.execute(post);
+			setJD(julian(date), rate);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static void action(String command) {
-		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/stelaction/do");
-			
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("id", command));
-			
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-			
-			client.execute(post);
+    public static void action(String command) {
+        try {
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost("http://192.168.99.64:8090/api/stelaction/do");
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+            // add header
+            List<NameValuePair> urlParameters = new ArrayList<>();
+            urlParameters.add(new BasicNameValuePair("id", command));
+
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            post.setHeader("Origin", "http://localhost:8090");
+
+            client.execute(post);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
-	private static long integerPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.intValue();
-	};
+    public static long integerPart(double julian) {
+        BigDecimal temp = new BigDecimal(julian);
+        return temp.intValue();
+    }
 
-	private static double fractionalPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.subtract(new BigDecimal(integerPart(julian))).doubleValue();
-	}
+    ;
 
-	public static double EaseIn(double t)
-	{
-		return Math.pow(t,2);
-	}
+    public static double fractionalPart(double julian) {
+        BigDecimal temp = new BigDecimal(julian);
+        return temp.subtract(new BigDecimal(integerPart(julian))).doubleValue();
+    }
 
-	static double Flip(double x)
-	{
-		return 1 - x;
-	}
+    public static double EaseIn(double t) {
+        return Math.pow(t, 2);
+    }
 
-	public static double EaseOut(double t)
-	{
-		return Flip(Math.pow(Flip(t), 2));
-	}
+    static double Flip(double x) {
+        return 1 - x;
+    }
 
-	public static double EaseInOut(double t)
-	{
-		return lerp(EaseIn(t), EaseOut(t), t);
-	}
+    public static double EaseOut(double t) {
+        return Flip(Math.pow(Flip(t), 2));
+    }
 
-	// Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
-	// Lerping between same values might not produce the same value
-	public static double lerp(double v0, double v1, double t) {
-		return (1d - t) * v0 + t * v1;
-	}
+    public static double EaseInOut(double t) {
+        return lerp(EaseIn(t), EaseOut(t), t);
+    }
+
+    // Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
+    // Lerping between same values might not produce the same value
+    public static double lerp(double v0, double v1, double t) {
+        return (1d - t) * v0 + t * v1;
+    }
+
+
 }

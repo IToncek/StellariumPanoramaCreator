@@ -12,16 +12,16 @@
 package space.itoncek;
 
 public enum Action {
-	ART("Constellation_Art"),
-	LINES("Constellation_Lines"),
-	ATMOSPHERE("Atmosphere"),
-	GROUND("Ground"),
-	SATTELITES("Satellite_Hints"),
-	PLANETS("Planets");
-	
-	public final String action;
-	
-	Action(String action) {
-		this.action = action;
-	}
+    ART("Constellation_Art"),
+    LINES("Constellation_Lines"),
+    ATMOSPHERE("Atmosphere"),
+    GROUND("Ground"),
+    SATTELITES("Satellite_Hints"),
+    PLANETS("Planets");
+
+    public final String action;
+
+    Action(String action) {
+        this.action = action;
+    }
 }
