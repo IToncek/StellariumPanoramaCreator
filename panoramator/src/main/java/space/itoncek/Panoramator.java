@@ -31,6 +31,7 @@ import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.file.Files;
@@ -40,10 +41,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Stack;
 
 import static java.lang.Thread.sleep;
 
@@ -101,35 +100,74 @@ public class Panoramator {
 //		}
 //
 
-		//A
+//		//A
 //        slideTo(src, target, LocalDateTime.of(2024, 1, 8, 6, 46),
 //                LocalDateTime.of(2024, 1, 14, 17, 15, 00),
 //                500,
 //				new Snapshot3D(145.9676, 9.1711, 16),
-//				new Snapshot3D(216.4507, 11.0995, 40));
-
-
-		//B
+//				new Snapshot3D(216.4507, 11.0995, 40), null);
+//
+//
+//		//B
 //        slideTo(src, new File(target + "/b"), LocalDateTime.of(2024, 1, 14, 17, 15, 00),
 //				LocalDateTime.of(2024,1,18,21,30,00),
 //                500,
 //				new Snapshot3D(216.4507, 11.0995, 40),
-//				new Snapshot3D(242.8905,37.5064,20));
-		//C
+//				new Snapshot3D(242.8905,37.5064,20), null);
+//		//C
 //        slideTo(src, new File(target + "/C"), LocalDateTime.of(2024,1,18,21,30,00),
 //				LocalDateTime.of(2024,3,13,18,47,22),
 //                500,
 //				new Snapshot3D(242.8905,37.5064,20),
-//				new Snapshot3D(255.4026,26.0740,50));
-		//D
-        slideTo(src, new File(target + "/d"), LocalDateTime.of(2024,3,13,18,47,22),
-				LocalDateTime.of(2024,3,24,19,00,00),
+//				new Snapshot3D(255.4026,26.0740,50), null);
+//		//D
+//        slideTo(src, new File(target + "/d"), LocalDateTime.of(2024,3,13,18,47,22),
+//				LocalDateTime.of(2024,3,24,19,00,00),
+//                500,
+//				new Snapshot3D(255.4026,26.0740,50),
+//				new Snapshot3D(268.4509,20.3217,40), null);
+//		//E
+//        slideTo(src, new File(target + "/e"), LocalDateTime.of(2024,3,24,19,00,00),
+//				LocalDateTime.of(2024,3,24,19,00,00),
+//                500,
+//				new Snapshot3D(268.4509,20.3217,40),
+//				new Snapshot3D(283.4194,24.7226,50), null);
+//
+//        //F
+////        command("""
+////                core.selectObjectByName("12P/Pons-Brooks (2024)", false);
+////                StelMovementMgr.setFlagTracking(true);
+////                core.wait(2);
+////                for (i=0; i<17; i++)
+////                {
+////                    var day = i + 1;
+////                    core.setDate("+1 day");
+////                    var info = core.getObjectInfo("12P/Pons-Brooks (2024)");
+////                    var az = info.azimuth;
+////                    var alt = info.altitude;
+////                    MarkerMgr.markerHorizon(az, alt, true, "gear", "#ffff00", 5);
+////                	core.screenshot(i+"", false, "", true);
+////                    core.wait(1);
+////                }
+////                MarkerMgr.deleteAllMarkers();
+////                core.screenshot(17, false, "", true);
+////                """);
+////        G
+//        slideTo(src, new File(target + "/g"), LocalDateTime.of(2024,4,10,20,00,00),
+//				LocalDateTime.of(2024,4,10,20,00,00),
+//                500,
+//				new Snapshot3D(274.9639,18.2356,50),
+//				new Snapshot3D(273.3863,21.2127,6), null);
+        //H
+        slideTo(src, new File(target + "/h"), LocalDateTime.of(2024,4,10,20,00,00),
+				LocalDateTime.of(2024,4,11,6,00,00),
                 500,
-				new Snapshot3D(255.4026,26.0740,50),
-				new Snapshot3D(268.4509,20.3217,40));
+				new Snapshot3D(273.3863,21.2127,6),
+				new Snapshot3D(108.9834,5.9119,0.5),
+                50d);
     }
 
-    public static void slideTo(File source, File target, LocalDateTime start, LocalDateTime end, long steps, Snapshot3D in, Snapshot3D out) throws IOException, InterruptedException, FontFormatException, Lerp.LerpException {
+    public static void slideTo(File source, File target, LocalDateTime start, LocalDateTime end, long steps, Snapshot3D in, Snapshot3D out, Double midZoom) throws IOException, InterruptedException, FontFormatException, Lerp.LerpException {
         target.mkdirs();
 		long startDays = integerPart(julian(start));
 		long endDays = integerPart(julian(end));
@@ -138,16 +176,26 @@ public class Panoramator {
 		double endHours = fractionalPart(julian(end));
 
 		try (ProgressBar pb = pbb.setInitialMax(steps+1).build()) {
-            long begin = 318;
+            long begin = 0;
             long total = steps;
             pb.stepTo(begin);
             pb.maxHint(total);
 			for (long step = begin; step <= total; step++) {
-				Snapshot5D snapshot5D = Lerp5D.interpolateDirect(
-						in.convertTo5D(start),
-						out.convertTo5D(end),
-						step / Double.valueOf(steps)
-				);
+				Snapshot5D snapshot5D;
+                if(midZoom == null) {
+                    snapshot5D = Lerp5D.interpolateDirect(
+                            in.convertTo5D(start),
+                            out.convertTo5D(end),
+                            step / Double.valueOf(steps)
+                    );
+                } else {
+                    snapshot5D = Lerp5D.interpolateMidzoom(
+                            in.convertTo5D(start),
+                            out.convertTo5D(end),
+                            step / Double.valueOf(steps),
+                            midZoom
+                    );
+                }
                 captureTimestamp(new File(target + "/timestamp/"), unJulian(snapshot5D.day() + snapshot5D.hour()), step);
                 zoom(snapshot5D.fov());
 				setJD(snapshot5D.day() + snapshot5D.hour());
@@ -247,17 +295,29 @@ public class Panoramator {
             // add header
             List<NameValuePair> urlParameters = new ArrayList<>();
             urlParameters.add(new BasicNameValuePair("code", command));
-            urlParameters.add(new BasicNameValuePair("useIncludes", "false"));
+            urlParameters.add(new BasicNameValuePair("useIncludes", "true"));
 
             post.setEntity(new UrlEncodedFormEntity(urlParameters));
             post.setHeader("Content-Type", "application/x-www-form-urlencoded");
             post.setHeader("Origin", "http://localhost:8090");
 
-            client.execute(post);
+            HttpResponse execute = client.execute(post);
+
+            //System.out.println(readInputStream(execute.getEntity().getContent()));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String readInputStream(InputStream content) {
+        StringJoiner js = new StringJoiner("\n");
+
+        try(Scanner sc = new Scanner(content)) {
+            while (sc.hasNextLine()) js.add(sc.nextLine());
+        }
+
+        return js.toString();
     }
 
     public static double julian(LocalDateTime date) {
@@ -315,9 +375,9 @@ public class Panoramator {
             post.setHeader("Origin", "http://localhost:8090");
 
             HttpResponse res = client.execute(post);
-            if(!new String(res.getEntity().getContent().readAllBytes()).equals("ok")) {
-                System.out.println(new String(res.getEntity().getContent().readAllBytes()));
-            }
+//            if(!new String(res.getEntity().getContent().readAllBytes()).equals("ok")) {
+//                System.out.println(new String(res.getEntity().getContent().readAllBytes()));
+//            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
