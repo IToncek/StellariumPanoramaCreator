@@ -9,14 +9,15 @@
  * author on their public email address.
  */
 
-package me.itoncek;
+package space.itoncek;
 
 public enum Action {
 	ART("Constellation_Art"),
 	LINES("Constellation_Lines"),
 	ATMOSPHERE("Atmosphere"),
 	GROUND("Ground"),
-	SATTELITES("Satellite_Hints");
+	SATTELITES("Satellite_Hints"),
+	PLANETS("Planets");
 	
 	public final String action;
 	

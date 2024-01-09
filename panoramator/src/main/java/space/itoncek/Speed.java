@@ -9,7 +9,7 @@
  * author on their public email address.
  */
 
-package me.itoncek;
+package space.itoncek;
 
 public enum Speed {
 	STOP(0.0d),

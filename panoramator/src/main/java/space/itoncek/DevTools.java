@@ -9,7 +9,7 @@
  * author on their public email address.
  */
 
-package me.itoncek;
+package space.itoncek;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
