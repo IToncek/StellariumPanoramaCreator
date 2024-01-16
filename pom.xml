@@ -27,5 +27,6 @@
     <modules>
         <module>BlenderMover</module>
         <module>panoramator</module>
+        <module>subtracter</module>
     </modules>
 </project>

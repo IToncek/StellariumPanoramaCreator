@@ -48,10 +48,10 @@ public class Lerp5D {
         double fov;
 
         if(ratio<.5) {
-            double easeIn = EaseIn(ratio*2);
+            double easeIn = EaseInOut(ratio*2);
             fov = lerp(start.fov(), midZoom, easeIn);
         } else  {
-            double easeIn = EaseOut((ratio*2)-1);
+            double easeIn = EaseInOut((ratio*2)-1);
             fov = lerp(midZoom, end.fov(), easeIn);
         }
         return new Snapshot5D(azi, alt, fov, day, hour);
