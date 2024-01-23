@@ -89,7 +89,7 @@ public class Panoramator {
             file.delete();
         }
 
-        long steps = 100;
+        long steps = 500;
 //		//Hide planets
 //		for (Action action : List.of(Action.PLANETS)) {
 //			action("actionShow_" + action.action);
@@ -223,76 +223,83 @@ public class Panoramator {
 //				new Snapshot3D(50.6214,24.2641,50),
 //				new Snapshot3D(70.2254,12.665,.6),
 //                25d);
-//        P
-        slideTo(src, new File(target + "/p"), LocalDateTime.of(2024,8,14,2,0,1),
-				LocalDateTime.of(2024,8,21,5,21,8),
+////        P
+//        slideTo(src, new File(target + "/p"), LocalDateTime.of(2024,8,14,2,0,1),
+//				LocalDateTime.of(2024,8,21,5,21,8),
+//                steps,
+//				new Snapshot3D(70.2254,12.665,.6),
+//				new Snapshot3D(229.6735555555555555555555555555,20.03675,.18),
+//                50d);
+////        Q
+//        slideTo(src, new File(target + "/q"), LocalDateTime.of(2024,8,21,5,21,8),
+//				LocalDateTime.of(2024,9,18,4,50,0),
+//                steps,
+//				new Snapshot3D(229.6735555555555555555555555555,20.03675,.18),
+//				new Snapshot3D(243.22625,16.287583333333333333333333333333,1),
+//                50d);
+////        R
+//        slideTo(src, new File(target + "/r"), LocalDateTime.of(2024,9,18,4,50,0),
+//				LocalDateTime.of(2024,9,18,6,50,0),
+//                steps,
+//				new Snapshot3D(243.22625,16.287583333333333333333333333333,1),
+//				new Snapshot3D(106.22241666666666666666666666667,5.7645,15),
+//                50d);
+//
+//                //S,
+//
+//          command("""
+//                  var obj = "C/2023 A3 (Tsuchinshan-ATLAS)";
+//                  core.selectObjectByName(obj, false);
+//                  StelMovementMgr.setFlagTracking(true);
+//                  for (i=0; i<19; i++)
+//                  {
+//                      var day = i + 1;
+//                      core.setDate("+1 day");
+//                      var info = core.getObjectInfo(obj);
+//                      var az = info.azimuth;
+//                      var alt = info.altitude;
+//                      MarkerMgr.markerHorizon(az, alt, true, "gear", "#ffff00", 5);
+//                  	  core.screenshot(i+"", false, "", true);
+//                  }
+//                  MarkerMgr.deleteAllMarkers();
+//                  core.screenshot(17, false, "", true);
+//                  """);
+//          boolean running = true;
+//          while (running) {
+//              if(running) sleep(1000);
+//              running = isScriptRunning();
+//          }
+//
+//          moveAllCapturesToAFolder(src,new File(target+"/s"));
+//
+////        t
+//        slideTo(src, new File(target + "/t"), LocalDateTime.of(2024,10,6,6,50,00),
+//				LocalDateTime.of(2024,10,14,19,30,0),
+//                steps,
+//				new Snapshot3D(102.85011111111111111111111111111,4.6696388888888888888888888888889,10),
+//				new Snapshot3D(259.25366666666666666666666666667,10.891194444444444444444444444444,23),
+//                50d);
+////        u
+//        slideTo(src, new File(target + "/u"), LocalDateTime.of(2024,10,14,19,30,0),
+//				LocalDateTime.of(2024,10,14,19,30,0),
+//                steps,
+//				new Snapshot3D(259.25366666666666666666666666667,10.891194444444444444444444444444,23),
+//				new Snapshot3D(134.0209,19.1270,2.2),
+//                50d);
+////        v
+//        slideTo(src, new File(target + "/v"), LocalDateTime.of(2024,10,14,19,30,0),
+//				LocalDateTime.of(2024,10,23,23,50,1),
+//                steps,
+//				new Snapshot3D(134.0209,19.1270,2.2),
+//				new Snapshot3D(65.3987,10.8216,5),
+//                50d);
+//        w
+        slideTo(src, new File(target + "/w"), LocalDateTime.of(2024,10,23,23,50,1),
+				LocalDateTime.of(2024,12,18,10,14,27),
                 steps,
-				new Snapshot3D(70.2254,12.665,.6),
-				new Snapshot3D(229.6735555555555555555555555555,20.03675,.18),
-                50d);
-//        Q
-        slideTo(src, new File(target + "/q"), LocalDateTime.of(2024,8,21,5,21,8),
-				LocalDateTime.of(2024,9,18,4,50,0),
-                steps,
-				new Snapshot3D(229.6735555555555555555555555555,20.03675,.18),
-				new Snapshot3D(243.22625,16.287583333333333333333333333333,1),
-                50d);
-//        R
-        slideTo(src, new File(target + "/r"), LocalDateTime.of(2024,9,18,4,50,0),
-				LocalDateTime.of(2024,9,18,6,50,0),
-                steps,
-				new Snapshot3D(243.22625,16.287583333333333333333333333333,1),
-				new Snapshot3D(106.22241666666666666666666666667,5.7645,15),
-                50d);
-
-                //S,
-
-          command("""
-                  var obj = "C/2023 A3 (Tsuchinshan-ATLAS)";
-                  core.selectObjectByName(obj, false);
-                  StelMovementMgr.setFlagTracking(true);
-                  for (i=0; i<19; i++)
-                  {
-                      var day = i + 1;
-                      core.setDate("+1 day");
-                      var info = core.getObjectInfo(obj);
-                      var az = info.azimuth;
-                      var alt = info.altitude;
-                      MarkerMgr.markerHorizon(az, alt, true, "gear", "#ffff00", 5);
-                  	  core.screenshot(i+"", false, "", true);
-                  }
-                  MarkerMgr.deleteAllMarkers();
-                  core.screenshot(17, false, "", true);
-                  """);
-          boolean running = true;
-          while (running) {
-              if(running) sleep(1000);
-              running = isScriptRunning();
-          }
-
-          moveAllCapturesToAFolder(src,new File(target+"/s"));
-
-//        t
-        slideTo(src, new File(target + "/t"), LocalDateTime.of(2024,10,6,6,50,00),
-				LocalDateTime.of(2024,10,14,19,30,0),
-                steps,
-				new Snapshot3D(102.85011111111111111111111111111,4.6696388888888888888888888888889,10),
-				new Snapshot3D(259.25366666666666666666666666667,10.891194444444444444444444444444,23),
-                50d);
-//        u
-        slideTo(src, new File(target + "/u"), LocalDateTime.of(2024,10,14,19,30,0),
-				LocalDateTime.of(2024,10,14,19,30,0),
-                steps,
-				new Snapshot3D(259.25366666666666666666666666667,10.891194444444444444444444444444,23),
-				new Snapshot3D(134.0209,19.1270,2.2),
-                50d);
-//        v
-        slideTo(src, new File(target + "/v"), LocalDateTime.of(2024,10,14,19,30,0),
-				LocalDateTime.of(2024,10,23,23,50,1),
-                steps,
-				new Snapshot3D(134.0209,19.1270,2.2),
 				new Snapshot3D(65.3987,10.8216,5),
-                50d);
+				new Snapshot3D(301.1612,3.8916,1),
+                70d);
     }
 
     private static boolean isScriptRunning() {
