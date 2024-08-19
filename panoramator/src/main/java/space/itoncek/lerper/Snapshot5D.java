@@ -1,6 +1,9 @@
 package space.itoncek.lerper;
 
-public record Snapshot5D(double azi, double alt, double fov, long day, double hour) {
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+public record Snapshot5D(double azi, double alt, double fov, LocalDate day, LocalTime hour) {
 
     @Override
     public String toString() {

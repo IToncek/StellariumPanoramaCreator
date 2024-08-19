@@ -5,6 +5,9 @@ import space.itoncek.Snapshot3D;
 
 import static space.itoncek.lerper.Lerp.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class Lerp5D {
     public static @NotNull Snapshot5D interpolateDirect(@NotNull Snapshot5D start, @NotNull Snapshot5D end, double ratio) {
         double eased = EaseInOut(ratio);
@@ -12,16 +15,16 @@ public class Lerp5D {
         double azi = lerp(start.azi(), end.azi(), eased);
         double alt = lerp(start.alt(), end.alt(), eased);
         double fov = lerp(start.fov(), end.fov(), eased);
-        long day = Math.round(Math.floor(lerp(start.day()+.5, end.day()+.5, eased)));
-        double hour = lerp(start.hour(), end.hour(), eased);
+        LocalDate day = LocalDate.ofEpochDay(Math.round(lerp(start.day().toEpochDay()+.5d, end.day().toEpochDay()+.5, eased)));
+        LocalTime hour = LocalTime.ofSecondOfDay(Math.round(lerp(start.hour().toSecondOfDay(), end.hour().toSecondOfDay(), eased)));
 
         return new Snapshot5D(azi, alt, fov, day, hour);
     }
 
     public static Snapshot5D interpolateMidpoint(Snapshot5D start, Snapshot3D mid, Snapshot5D end, double ratio) {
         double eased = EaseInOut(ratio);
-        long day = Math.round(Math.floor(lerp(start.day()+.5, end.day()+.5, eased)));
-        double hour = lerp(start.hour(), end.hour(), eased);
+        LocalDate day = LocalDate.ofEpochDay(Math.round(lerp(start.day().toEpochDay()+.5d, end.day().toEpochDay()+.5, eased)));
+        LocalTime hour = LocalTime.ofSecondOfDay(Math.round(lerp(start.hour().toSecondOfDay(), end.hour().toSecondOfDay(), eased)));
         double azi, alt, fov;
 
         if (ratio < .5) {
@@ -43,8 +46,8 @@ public class Lerp5D {
 
         double azi = lerp(start.azi(), end.azi(), eased);
         double alt = lerp(start.alt(), end.alt(), eased);
-        long day = Math.round(Math.floor(lerp(start.day()+.5, end.day()+.5, eased)));
-        double hour = lerp(start.hour(), end.hour(), eased);
+        LocalDate day = LocalDate.ofEpochDay(Math.round(lerp(start.day().toEpochDay()+.5d, end.day().toEpochDay()+.5, eased)));
+        LocalTime hour = LocalTime.ofSecondOfDay(Math.round(lerp(start.hour().toSecondOfDay(), end.hour().toSecondOfDay(), eased)));
         double fov;
 
         if(ratio<.5) {
