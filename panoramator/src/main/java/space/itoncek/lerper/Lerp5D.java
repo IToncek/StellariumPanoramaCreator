@@ -21,26 +21,6 @@ public class Lerp5D {
         return new Snapshot5D(azi, alt, fov, day, hour);
     }
 
-    public static Snapshot5D interpolateMidpoint(Snapshot5D start, Snapshot3D mid, Snapshot5D end, double ratio) {
-        double eased = EaseInOut(ratio);
-        LocalDate day = LocalDate.ofEpochDay(Math.round(lerp(start.day().toEpochDay()+.5d, end.day().toEpochDay()+.5, eased)));
-        LocalTime hour = LocalTime.ofSecondOfDay(Math.round(lerp(start.hour().toSecondOfDay(), end.hour().toSecondOfDay(), eased)));
-        double azi, alt, fov;
-
-        if (ratio < .5) {
-            double preeased = EaseInOut(ratio * 2);
-            azi = lerp(start.azi(), mid.azi(), preeased);
-            alt = lerp(start.alt(), mid.alt(), preeased);
-            fov = lerp(start.fov(), mid.fov(), preeased);
-        } else {
-            double preeased = EaseInOut((ratio * 2d) - 1);
-            azi = lerp(mid.azi(), end.azi(), preeased);
-            alt = lerp(mid.alt(), end.alt(), preeased);
-            fov = lerp(mid.fov(), end.fov(), preeased);
-        }
-        return new Snapshot5D(azi, alt, fov, day, hour);
-    }
-
     public static Snapshot5D interpolateMidzoom(@NotNull Snapshot5D start, @NotNull Snapshot5D end, double ratio, @NotNull Double midZoom) {
         double eased = EaseInOut(ratio);
 
