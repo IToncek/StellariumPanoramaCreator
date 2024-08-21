@@ -11,44 +11,28 @@
 
 package space.itoncek;
 
-import static java.lang.Thread.sleep;
-import me.tongfei.progressbar.ProgressBarBuilder;
-import me.tongfei.progressbar.ProgressBarStyle;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import space.itoncek.lerper.Lerp;
 import space.itoncek.lerper.Lerp3D;
 import space.itoncek.lerper.Lerp5D;
 import space.itoncek.lerper.Snapshot5D;
 
-import javax.imageio.ImageIO;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.Graphics2D;
-import java.awt.font.LineMetrics;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 public class Panoramator {
-	public static ProgressBarBuilder pbb = new ProgressBarBuilder().setTaskName("Lerpin'").setMaxRenderedLength(150).setUnit("images", 1).setStyle(ProgressBarStyle.COLORFUL_UNICODE_BAR).setSpeedUnit(ChronoUnit.SECONDS).showSpeed().clearDisplayOnFinish().continuousUpdate();
 
-	public static Font fnt;
+	public static final Font fnt;
 
 	static {
 		try {
@@ -58,7 +42,7 @@ public class Panoramator {
 		}
 	}
 
-	public static void main(String[] args) throws InterruptedException, IOException, FontFormatException, Lerp.LerpException {
+	public static void main(String[] args) {
 //        command("StelMovementMgr.zoomTo(100,0)");
 //        move(20,270);
 //        command("core.moveToAltAzi(20., 270., 0.)");
@@ -130,7 +114,7 @@ public class Panoramator {
 //		commands.addAll(slideTo(new File(target + "\\" + sequence + "_cn"), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(281.0042, 20.1287, 50), new Snapshot3D(67.7101, 75.6493, 70), null));
 //		commands.addAll(showConstellations(false));
 
-		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(67.7101, 75.6493, 70)));
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(67.7101, 75.6493, 70)));
 		commands.addAll(setup());
 		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(showConstellations(true));
@@ -143,11 +127,11 @@ public class Panoramator {
 
 		//------------------------------------------------------------------------------------------------------------------------------------------------
 		sequence = "0004";
-		commands.addAll(slideTo(new File(target + "\\" + sequence + "_cl"), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(67.7101, 75.6493, 70), new Snapshot3D(180.2523, 68.6574, 55), null));
-		commands.addAll(showConstellations(true));
-		commands.addAll(slideTo(new File(target + "\\" + sequence + "_cn"), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(67.7101, 75.6493, 70), new Snapshot3D(180.2523, 68.6574, 55), null));
+//		commands.addAll(slideTo(new File(target + "\\" + sequence + "_cl"), LocalDateTime.of(2024, 12, 15, 19, 30, 0), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(67.7101, 75.6493, 70), new Snapshot3D(180.2523, 68.6574, 55), null));
+//		commands.addAll(slideTo(new File(target + "\\" + sequence + "_cn"), LocalDateTime.of(2024, 12, 15, 19, 30, 0), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(67.7101, 75.6493, 70), new Snapshot3D(180.2523, 68.6574, 55), null));
 
 		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(180.2523, 68.6574, 55)));
+		commands.addAll(showConstellations(true));
 
 		commands.add(cheese(sequence + "_constellations", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(showConstellations(false));
@@ -166,7 +150,6 @@ public class Panoramator {
 		commands.addAll(slideTo(new File(target + "\\" + sequence + "_cn"), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(180.2523, 68.6574, 55), new Snapshot3D(181.1800, 43.1769, 70), null));
 
 		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(181.1800, 43.1769, 70)));
-
 		commands.add(cheese(sequence + "_constellations", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(showConstellations(false));
 		commands.addAll(showGround(true));
@@ -220,6 +203,7 @@ public class Panoramator {
 					fw.write(command + "\n");
 					System.out.println(filename + " >> " + command);
 				}
+				fw.write("core.quitStellarium();\n");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -227,7 +211,7 @@ public class Panoramator {
 	}
 
 	private static Collection<String> showGround(boolean enabled) {
-		return List.of("LandscapeMgr.setFlagLandscape(%b)".formatted(enabled));
+		return List.of("LandscapeMgr.setFlagLandscape(%b);".formatted(enabled), "core.wait(3);");
 	}
 
 	private static List<String> setup() {
@@ -286,7 +270,7 @@ public class Panoramator {
 	}
 
 	private static String setTime(LocalDateTime time) {
-		return "core.setDate(\"%s\");".formatted(time.format(DateTimeFormatter.ISO_DATE_TIME));
+		return "core.setDate(\"%s\");".formatted(time.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
 	}
 
 	public static ArrayList<String> slideTo(File target, LocalDateTime start, LocalDateTime end, long steps, Snapshot3D in, Snapshot3D out, Double midZoom) {
@@ -339,57 +323,6 @@ public class Panoramator {
 //		zoom(snapshot5D.fov());
 //	}
 
-	private static void captureTimestamp(File f, LocalDateTime t, long step) throws IOException, FontFormatException {
-		f.mkdirs();
-		BufferedImage image = new BufferedImage(580, 80, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D graphics = image.createGraphics();
-		graphics.setFont(fnt.deriveFont(50f));
-		String st = t.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-		LineMetrics lineMetrics = fnt.deriveFont(50f).getLineMetrics(st, graphics.getFontRenderContext());
-		graphics.drawString(st, 10, 10 + lineMetrics.getHeight());
-		ImageIO.write(image, "png", new File(f + "/" + step + ".png"));
-		graphics.dispose();
-	}
-
-	public static void bareCapture(File dest, File in, String name) {
-		action("actionSave_Screenshot_Global");
-		long i = 0;
-
-		for (File file : Objects.requireNonNull(in.listFiles())) {
-			try {
-				String suffix = "";
-				if (i > 0) {
-					suffix = "(" + i + ")";
-				}
-				Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
-				i++;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	public static void capture(long alt, long az, File dest, File in, String name) throws InterruptedException {
-		//move(alt, az, );
-		sleep(50);
-		action("actionSave_Screenshot_Global");
-		sleep(50);
-		long i = 0;
-
-		for (File file : Objects.requireNonNull(in.listFiles())) {
-			try {
-				String suffix = "";
-				if (i > 0) {
-					suffix = "(" + i + ")";
-				}
-				Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
-				i++;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
 	public static ArrayList<String> move(double alt, double az, double fov) {
 		ArrayList<String> out = new ArrayList<>();
 		out.add("core.moveToAltAzi(%f, %f, 0.);".formatted(alt, az));
@@ -401,144 +334,8 @@ public class Panoramator {
 		ArrayList<String> out = new ArrayList<>();
 		out.add("core.moveToAltAzi(%f, %f, 0.);".formatted(orientation.alt(), orientation.azi()));
 		out.add("StelMovementMgr.zoomTo(%f,0);".formatted(orientation.fov()));
-		out.add("core.setDate(\"%s\");".formatted(time.format(DateTimeFormatter.ISO_DATE_TIME)));
+		out.add("core.setDate(\"%s\");".formatted(time.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME)));
 		return out;
-	}
-
-	public static void zoom(double fov) {
-		command("StelMovementMgr.zoomTo(%f,0)".formatted(fov));
-	}
-
-	public static void command(String command) {
-		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/scripts/direct");
-
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("code", command));
-			urlParameters.add(new BasicNameValuePair("useIncludes", "true"));
-
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-
-			HttpResponse execute = client.execute(post);
-
-			//System.out.println(readInputStream(execute.getEntity().getContent()));
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static String readInputStream(InputStream content) {
-		StringJoiner js = new StringJoiner("\n");
-
-		try (Scanner sc = new Scanner(content)) {
-			while (sc.hasNextLine()) js.add(sc.nextLine());
-		}
-
-		return js.toString();
-	}
-
-	public static double julian(LocalDateTime date) {
-		ZonedDateTime d = date.atZone(ZoneId.of("Europe/Prague"));
-		ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
-		long secs = ChronoUnit.SECONDS.between(jul, d);
-		return (secs / 86400d) + 38;
-	}
-
-	public static LocalDateTime unJulian(double julian) {
-		long seconds = Math.round((julian - 38) * 86400);
-		ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
-		return jul.toLocalDateTime().plus(seconds, ChronoUnit.SECONDS);
-	}
-
-	public static void setJD(double jd) throws IOException {
-		setJD(jd, Speed.STOP);
-	}
-
-	public static void setJD(double jd, Speed rate) throws IOException {
-		//System.out.println(days);
-		HttpClient client = new DefaultHttpClient();
-		HttpPost post = new HttpPost("http://192.168.99.64:8090/api/main/time");
-
-		// add header
-		List<NameValuePair> urlParameters = new ArrayList<>();
-		urlParameters.add(new BasicNameValuePair("time", String.valueOf(jd)));
-		urlParameters.add(new BasicNameValuePair("timerate", String.valueOf(rate.getSpeed())));
-
-		post.setEntity(new UrlEncodedFormEntity(urlParameters));
-		post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-		post.setHeader("Origin", "http://localhost:8090");
-
-		client.execute(post);
-	}
-
-	public static void date(LocalDateTime date, Speed rate) {
-		try {
-			setJD(julian(date), rate);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static void action(String command) {
-		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/stelaction/do");
-
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("id", command));
-
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-
-			HttpResponse res = client.execute(post);
-//            if(!new String(res.getEntity().getContent().readAllBytes()).equals("ok")) {
-//                System.out.println(new String(res.getEntity().getContent().readAllBytes()));
-//            }
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-
-	public static long integerPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.intValue();
-	}
-
-	;
-
-	public static double fractionalPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.subtract(new BigDecimal(integerPart(julian))).doubleValue();
-	}
-
-	public static double EaseIn(double t) {
-		return Math.pow(t, 2);
-	}
-
-	static double Flip(double x) {
-		return 1 - x;
-	}
-
-	public static double EaseOut(double t) {
-		return Flip(Math.pow(Flip(t), 2));
-	}
-
-	public static double EaseInOut(double t) {
-		return lerp(EaseIn(t), EaseOut(t), t);
-	}
-
-	// Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
-	// Lerping between same values might not produce the same value
-	public static double lerp(double v0, double v1, double t) {
-		return (1d - t) * v0 + t * v1;
 	}
 
 

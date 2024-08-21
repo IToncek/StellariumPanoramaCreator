@@ -24,8 +24,4 @@ public class Lerp {
         return (1d - t) * v0 + t * v1;
     }
 
-    public static class LerpException extends Throwable {
-        public LerpException(String msg) {
-        }
-    }
 }
