@@ -11,9 +11,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Mover {
-    private int lastMove = 0;
     private final File folder;
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    private int lastMove = 0;
 
     public Mover(File file) {
         folder = file;
