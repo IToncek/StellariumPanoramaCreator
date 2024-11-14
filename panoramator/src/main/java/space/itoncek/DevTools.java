@@ -12,7 +12,7 @@
 package space.itoncek;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -67,12 +67,12 @@ public class DevTools {
 //			i++;
 //		}
 	}
-	
+
 	public static void subtract() throws IOException {
 		BufferedImage orig = ImageIO.read(new File("D:\\#astro\\astrometry\\jakub.jpeg"));
 		BufferedImage anot = ImageIO.read(new File("D:\\#astro\\astrometry\\jakub-ngc.png"));
 		BufferedImage fin = new BufferedImage(orig.getWidth(), orig.getHeight(), orig.getType());
-		
+
 		for (int y = 0; y < orig.getHeight(); y++) {
 			for (int x = 0; x < orig.getWidth(); x++) {
 				Color origC = new Color(orig.getRGB(x, y));
@@ -91,13 +91,13 @@ public class DevTools {
 		}
 		ImageIO.write(fin, "png", new File("D:\\#astro\\astrometry\\jakub-ngcdiff.png"));
 	}
-	
+
 	public static int average(List<Integer> colors) {
 		int totalR = 0;
 		int totalG = 0;
 		int totalB = 0;
 		int images = 0;
-		
+
 		for (Integer color : colors) {
 			Color c = new Color(color);
 			totalR += c.getRed();
@@ -105,7 +105,7 @@ public class DevTools {
 			totalB += c.getBlue();
 			images++;
 		}
-		
+
 		return new Color(totalR / images, totalG / images, totalB / images).getRGB();
 	}
 }

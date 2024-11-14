@@ -17,10 +17,11 @@ public enum Action {
 	ATMOSPHERE("Atmosphere"),
 	GROUND("Ground"),
 	SATTELITES("Satellite_Hints"),
-	PLANETS("Planets");
-	
+	PLANETS("Planets"),
+	METEORSHOWER("MeteorShowers");
+
 	public final String action;
-	
+
 	Action(String action) {
 		this.action = action;
 	}

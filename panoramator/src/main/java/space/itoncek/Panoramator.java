@@ -11,302 +11,503 @@
 
 package space.itoncek;
 
-import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
-import me.tongfei.progressbar.ProgressBarStyle;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
+import space.itoncek.lerper.Lerp3D;
+import space.itoncek.lerper.Lerp5D;
+import space.itoncek.lerper.Snapshot5D;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
-import java.awt.image.BufferedImage;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
-
-import static java.lang.Thread.sleep;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Panoramator {
-	public static ProgressBarBuilder pbb = new ProgressBarBuilder()
-			.setTaskName("Capturing panorama")
-			.setMaxRenderedLength(150)
-			.setUnit("images",1)
-			.setStyle(ProgressBarStyle.COLORFUL_UNICODE_BLOCK)
-			.setSpeedUnit(ChronoUnit.SECONDS);
 
-	public static Font fnt;
+	public static final Font fnt;
 
 	static {
 		try {
-			fnt = Font.createFont(Font.TRUETYPE_FONT, new URL("https://cdn.itoncek.space/fonts/VCR_OSD_MONO-Regular.ttf").openStream());
-		} catch (FontFormatException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
+			fnt = Font.createFont(Font.TRUETYPE_FONT, URI.create("https://cdn.itoncek.space/fonts/VCR_OSD_MONO-Regular.ttf").toURL().openStream());
+		} catch (FontFormatException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public static void main(String[] args) throws InterruptedException, IOException, FontFormatException {
-		command("StelMovementMgr.zoomTo(100,0)");
-		//move(20,270);
-		command("core.moveToAltAzi(20., 270., 0.)");
-		action("actionToggle_GuiHidden_Global");
-
-		Runtime.getRuntime().addShutdownHook(new Thread(()->{
-			action("actionToggle_GuiHidden_Global");
-		}));
-
-		File target = new File("C:\\Users\\user\\Pictures\\Stellarium\\output");
-		File src = new File("C:\\Users\\user\\Pictures\\Stellarium\\input");
-		target.mkdirs();
-		src.mkdirs();
-		for (File file : src.listFiles()) {
-			file.delete();
-		}
-
-//		//Hide planets
-//		for (Action action : List.of(Action.PLANETS)) {
-//			action("actionShow_" + action.action);
-//		}
-
-//		capturePano(src,target,"test");
+	public static void main(String[] args) throws InterruptedException {
+//        command("StelMovementMgr.zoomTo(100,0)");
+//        move(20,270);
+//        command("core.moveToAltAzi(20., 270., 0.)");
+//		action("actionToggle_GuiHidden_Global");
 //
-//		//Show planets
-//		for (Action action : List.of(Action.PLANETS)) {
-//			action("actionShow_" + action.action);
-//		}
-//
-		slideTo(src,target,LocalDateTime.of(2024,1,8,7,12,53),
-				LocalDateTime.of(2024,1,14,17,15),
-				250);
-	}
+//		Runtime.getRuntime().addShutdownHook(new Thread(()->{
+//			action("actionToggle_GuiHidden_Global");
+//		}));
+		HashMap<String, List<String>> superscripts = new HashMap<>();
 
-	public static void slideTo(File source, File fintrg, LocalDateTime start, LocalDateTime end, int steps) throws IOException, InterruptedException, FontFormatException {
-		long startDays = integerPart(julian(start));
-		long endDays = integerPart(julian(end));
+		prosinecPopulate(superscripts);
 
-		double startHours = fractionalPart(julian(start));
-		double endHours = fractionalPart(julian(end));
-
-		for (int step = 0; step <= steps; step++) {
-			double ratio = EaseInOut((step + 0d)/steps);
-			long days = Math.round(Math.floor(lerp(startDays,endDays,ratio)));
-			double hours = lerp(startHours,endHours,ratio);
-
-			setJD(days+hours);
-//			sleep(50);
-			captureTimestamp(new File(fintrg + "/timestamp/"), unJulian(days+hours), step);
-			capturePano(source, fintrg, step + "");
-		}
-	}
-
-	private static void captureTimestamp(File f, LocalDateTime t, int step) throws IOException, FontFormatException {
-		f.mkdirs();
-		BufferedImage image = new BufferedImage(650,70, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D graphics = image.createGraphics();
-		graphics.setFont(fnt.deriveFont(50f));
-		String st = t.format(DateTimeFormatter.ofPattern("dd.MM.YY - HH:mm:ss"));
-		LineMetrics lineMetrics = fnt.deriveFont(40f).getLineMetrics(st, graphics.getFontRenderContext());
-		graphics.drawString(st,10, 10+lineMetrics.getHeight());
-		ImageIO.write(image,"png", new File(f + "/" + step + ".png"));
-		graphics.dispose();
-	}
-
-	
-	public static void capturePano(File source, File fintrg, String name) throws InterruptedException {
-		File target = new File(fintrg.getAbsolutePath() + "\\" + name);
-		target.mkdir();
-
-		List<Rotation> rotations = Rotation.generateCubemapRotations();
-
-		for (Rotation rotation : ProgressBar.wrap(rotations,pbb)) {
-			capture(rotation.alt(),rotation.azi(),target,source, rotation.dir());
-		}
-		
-		try (Scanner sc = new Scanner(new File("template.pto"))) {
-			try (FileWriter fileWriter = new FileWriter(fintrg.getAbsolutePath() + "\\" + name + ".pto")) {
-				while (sc.hasNextLine()) {
-					String line = sc.nextLine();
-					line = line.replace("%prf%", target.getAbsolutePath() + "\\");
-					fileWriter.write(line + "\n");
+		ExecutorService es = Executors.newCachedThreadPool();
+		superscripts.forEach((filename, cmds) -> es.submit(() -> {
+			try (FileWriter fw = new FileWriter(filename + ".ssc")) {
+				for (String command : cmds) {
+					fw.write(command + "\n");
 				}
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public static void capture(int alt, int az, File dest, File in, String name) throws InterruptedException {
-		move(alt,az);
-		sleep(50);
-		action("actionSave_Screenshot_Global");
-		sleep(50);
-		int i = 0;
-		
-		for (File file : Objects.requireNonNull(in.listFiles())) {
-			try {
-				String suffix = "";
-				if(i > 0) {
-					suffix = "(" + i + ")";
-				}
-				Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + name + suffix + ".tif"));
-				i++;
+				fw.write("core.quitStellarium();\n");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+		}));
+		es.shutdown();
+		es.close();
+	}
+
+	private static void prosinecPopulate(HashMap<String, List<String>> superscripts) {
+		File target = new File("X:\\AC Prosinec\\footage\\");
+		target.mkdirs();
+
+		long steps = 500;
+
+		ArrayList<String> commands = new ArrayList<>(setup());
+
+//		//------------------------------------------------------------------------------------------------------------------------------------------------
+		String sequence = "0000";
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(276.5888, 28.4216, 72.8)));
+		commands.add("core.wait(1);");
+
+		commands.addAll(showConstellations(List.of(Constellation.Lyr)));
+		commands.add(cheese("0000_c_lyra", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Cyg)));
+		commands.add(cheese("0000_c_cygnus", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Aql)));
+		commands.add(cheese("0000_c_aql", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(clearConstellations());
+		commands.add(cheese("0000_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put("0000", commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0001";
+		commands.addAll(showConstellations(List.of(Constellation.Lyr, Constellation.Cyg, Constellation.Aql)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(276.5888, 28.4216, 72.8), new Snapshot3D(307.4430, 16.0075, 37.4), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(307.4430, 16.0075, 37.4)));
+
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Lyr, Constellation.Cyg, Constellation.Aql)));
+		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Her)));
+		commands.add(cheese(sequence + "_c_her", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0002";
+		commands.addAll(showConstellations(List.of(Constellation.Lyr, Constellation.Cyg, Constellation.Aql, Constellation.Her)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(307.4430, 16.0075, 37.4), new Snapshot3D(281.0042, 20.1287, 50), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(281.0042, 20.1287, 50)));
+
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Lyr, Constellation.Cyg, Constellation.Aql, Constellation.Her)));
+		commands.add(cheese(sequence + "_constellations", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0003";
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 18, 30, 0), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(281.0042, 20.1287, 50), new Snapshot3D(67.7101, 80, 70), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(67.7101, 80, 70)));
+		commands.addAll(setup());
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Cep)));
+		commands.add(cheese(sequence + "_c_cep", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Cas)));
+		commands.add(cheese(sequence + "_c_cas", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.And)));
+		commands.add(cheese(sequence + "_c_and", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Per)));
+		commands.add(cheese(sequence + "_c_per", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0004";
+		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(67.7101, 80, 70), new Snapshot3D(205.3829, 62.9077, 65), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(205.3829, 62.9077, 65)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per)));
+		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Peg)));
+		commands.add(cheese(sequence + "_c_peg", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0005";
+		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per, Constellation.Peg)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(205.3829, 62.9077, 65), new Snapshot3D(198.4649, 39.1161, 86), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(198.4649, 39.1161, 86)));
+		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per, Constellation.Peg)));
+		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(false));
+		commands.addAll(showConstellations(List.of(Constellation.Psc)));
+		commands.add(cheese(sequence + "_c_psc", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Aqr)));
+		commands.add(cheese(sequence + "_c_aqr", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Cet)));
+		commands.add(cheese(sequence + "_c_cet", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.addAll(showGround(true));
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0006";
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 19, 30, 0), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(181.1800, 43.1769, 70), new Snapshot3D(166.0080, 77.3050, 30), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(166.0080, 77.3050, 30)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur)));
+		commands.add(cheese(sequence + "_c_aur", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0007";
+		commands.addAll(showConstellations(List.of(Constellation.Aur)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(166.0080, 77.3050, 30), new Snapshot3D(201.0845, 66.8315, 52), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(201.0845, 66.8315, 52)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur)));
+		commands.add(cheese(sequence + "_c_aur", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Tau)));
+		commands.add(cheese(sequence + "_c_tau", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0008";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(201.0845, 66.8315, 52), new Snapshot3D(166.3988, 57.5968, 70), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(166.3988, 57.5968, 70)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau)));
+		commands.addAll(showGround(false));
+		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.CMi)));
+		commands.add(cheese(sequence + "_c_cmi", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Gem)));
+		commands.add(cheese(sequence + "_c_gem", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_ori", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear_ng", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(true));
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0009";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(166.3988, 57.5968, 70), new Snapshot3D(171.5850, 43.6764, 35), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(171.5850, 43.6764, 35)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem)));
+		commands.add(cheese(sequence + "_c_other", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_ori", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0010";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(171.5850, 43.6764, 35), new Snapshot3D(190, 30, 65), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(190, 30, 65)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_other", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Eri)));
+		commands.add(cheese(sequence + "_c_eri", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0011";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori, Constellation.Eri)));
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(190, 30, 65), new Snapshot3D(190, 15, 100), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(190, 15, 100)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_other", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Eri)));
+		commands.add(cheese(sequence + "_c_eri", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.CMa)));
+		commands.add(cheese(sequence + "_c_cma", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0012";
+		commands.addAll(clearConstellations());
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence + "_ng"), LocalDateTime.of(2024, 12, 15, 23, 30, 0), LocalDateTime.of(2024, 12, 16, 7, 0, 0), steps, new Snapshot3D(190, 15, 100), new Snapshot3D(260, 34, 60), null));
+		commands.addAll(showConstellations(List.of()));
+		commands.addAll(showGround(true));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), LocalDateTime.of(2024, 12, 16, 7, 0, 0), steps, new Snapshot3D(190, 15, 100), new Snapshot3D(260, 34, 60), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 16, 7, 0, 0), new Snapshot3D(260, 34, 60)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Cnc)));
+		commands.add(cheese(sequence + "c_cnc", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0013";
+		commands.addAll(showConstellations(List.of(Constellation.Cnc)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 16, 7, 0, 0), steps, new Snapshot3D(260, 34, 60), new Snapshot3D(204,69,85), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 16, 7, 0, 0), new Snapshot3D(204,69,85)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Leo)));
+		commands.add(cheese(sequence + "_c_leo", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Vir)));
+		commands.add(cheese(sequence + "_c_vir", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Boo)));
+		commands.add(cheese(sequence + "_c_boo", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.UMa)));
+		commands.add(cheese(sequence + "_c_uma", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Com)));
+		commands.add(cheese(sequence + "_c_com", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.CVn)));
+		commands.add(cheese(sequence + "_c_cvn", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(false));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear_ng", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+	}
+
+	private static Collection<String> showGround(boolean enabled) {
+		return List.of("LandscapeMgr.setFlagLandscape(%b);".formatted(enabled), "core.wait(3);");
+	}
+
+	private static List<String> setup() {
+		return List.of("ConstellationMgr.setArtFadeDuration(0.01);", "SolarSystem.setFlagPlanets(false);", "LandscapeMgr.setAtmosphereModel(\"ShowMySky\");", "core.setGuiVisible(false);", "core.setTimeRate(0);", "ConstellationMgr.setFlagLines(false);", "ConstellationMgr.setFlagArt(false);", "ConstellationMgr.setFlagIsolateSelected(true);", "core.wait(5);");
+	}
+
+	private static List<String> showConstellations(List<Constellation> constellations) {
+		ArrayList<String> commands = new ArrayList<>();
+		commands.add("ConstellationMgr.setFlagLines(true);");
+		commands.add("ConstellationMgr.setFlagArt(true);");
+		commands.add("ConstellationMgr.deselectConstellations();");
+		commands.add("core.wait(3);");
+		for (Constellation constellation : constellations) {
+			commands.add("core.selectConstellationByName(\"%s\");".formatted(constellation.name));
 		}
+		commands.add("core.wait(3);");
+		return commands;
 	}
 
-	public static void move(int alt, int az) {
-		command(String.format("core.moveToAltAzi(%d., %d., 0.)", alt,az));
+	private static List<String> clearConstellations() {
+		return List.of("ConstellationMgr.deselectConstellations()", "ConstellationMgr.setFlagLines(false);", "ConstellationMgr.setFlagArt(false);", "core.wait(3);");
 	}
 
-	public static void command(String command) {
-		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/scripts/direct");
+//    private static boolean isScriptRunning() {
+//        JSONObject o;
+//        try(Scanner sc = new Scanner(new URL("http://192.168.99.64:8090/api/scripts/status").openStream())) {
+//            StringJoiner js = new StringJoiner("\n");
+//            while (sc.hasNextLine()) js.add(sc.nextLine());
+//
+//            o = new JSONObject(js.toString());
+//            return o.getBoolean("scriptIsRunning");
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("code", command));
-			urlParameters.add(new BasicNameValuePair("useIncludes", "false"));
+//    private static void moveAllCapturesToAFolder(File in,File dest) {
+//        dest.mkdirs();
+//        int i = 0;
+//        for (File file : Objects.requireNonNull(in.listFiles())) {
+//            try {
+//                Files.move(file.toPath(), Path.of(dest.getAbsolutePath() + "\\" + i + ".tif"));
+//                i++;
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//    }
 
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-
-			client.execute(post);
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+	public static ArrayList<String> slideTo(File target, LocalDateTime start, long steps, Snapshot3D in, Snapshot3D out, Double midZoom) {
+		ArrayList<String> output = new ArrayList<>();
+		target.mkdirs();
+		output.add(setTime(start));
+		output.addAll(move(in.alt(), in.azi(), in.fov()));
+		output.add("core.wait(3);");
+		for (long step = 0; step <= steps; step++) {
+			Snapshot3D snapshot5D;
+			if (midZoom == null) {
+				snapshot5D = Lerp3D.interpolateDirect(in, out, step / (double) steps);
+			} else {
+				snapshot5D = Lerp3D.interpolateMidzoom(in, out, step / (double) steps, midZoom);
+			}
+			//captureTimestamp(new File(target + "/timestamp/"), unJulian(snapshot5D.day() + snapshot5D.hour()), step);
+			output.addAll(move(snapshot5D.alt(), snapshot5D.azi(), snapshot5D.fov()));
+			output.add(cheese(step + "", target));
+			output.add("core.wait(0.01);");
 		}
+		return output;
 	}
 
-	public static double julian(LocalDateTime date) {
-		ZonedDateTime d = date.atZone(ZoneId.of("Europe/Prague"));
-		ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
-		long secs = ChronoUnit.SECONDS.between(jul, d);
-		return (secs / 86400d) + 38;
+	private static String setTime(LocalDateTime time) {
+		return "core.setDate(\"%s\");".formatted(time.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
 	}
 
-	public static LocalDateTime unJulian(double julian) {
-		long seconds = Math.round((julian - 38)*86400);
-		ZonedDateTime jul = ZonedDateTime.of(-4712, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
-		return jul.toLocalDateTime().plus(seconds, ChronoUnit.SECONDS);
-	}
+	public static ArrayList<String> slideTo(File target, LocalDateTime start, LocalDateTime end, long steps, Snapshot3D in, Snapshot3D out, Double midZoom) {
+		ArrayList<String> output = new ArrayList<>();
+		target.mkdirs();
 
-	public static void setJD(double jd) throws IOException {
-		//System.out.println(days);
-		HttpClient client = new DefaultHttpClient();
-		HttpPost post = new HttpPost("http://192.168.99.64:8090/api/main/time");
+		output.add(setTime(start));
+		output.addAll(move(in.alt(), in.azi(), in.fov()));
+		output.add("core.wait(3);");
 
-		// add header
-		List<NameValuePair> urlParameters = new ArrayList<>();
-		urlParameters.add(new BasicNameValuePair("time", String.valueOf(jd)));
-		urlParameters.add(new BasicNameValuePair("timerate", String.valueOf(Speed.STOP)));
+		LocalDate startDays = start.toLocalDate();
+		LocalDate endDays = end.toLocalDate();
 
-		post.setEntity(new UrlEncodedFormEntity(urlParameters));
-		post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-		post.setHeader("Origin", "http://localhost:8090");
-
-		client.execute(post);
-	}
-
-	public static void date(LocalDateTime date, Speed rate) {
-		try {
-			//System.out.println(days);
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/main/time");
-
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("time", String.valueOf(julian(date))));
-			urlParameters.add(new BasicNameValuePair("timerate", String.valueOf(rate.getSpeed())));
-
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-
-			client.execute(post);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		LocalTime startHours = start.toLocalTime();
+		LocalTime endHours = end.toLocalTime();
+		for (long step = 0; step <= steps; step++) {
+			Snapshot5D snapshot5D;
+			if (midZoom == null) {
+				snapshot5D = Lerp5D.interpolateDirect(in.convertTo5D(startDays, startHours), out.convertTo5D(endDays, endHours), step / (double) steps);
+			} else {
+				snapshot5D = Lerp5D.interpolateMidzoom(in.convertTo5D(startDays, startHours), out.convertTo5D(endDays, endHours), step / (double) steps, midZoom);
+			}
+			//captureTimestamp(new File(target + "/timestamp/"), unJulian(snapshot5D.day() + snapshot5D.hour()), step);
+			output.addAll(move(LocalDateTime.of(snapshot5D.day(), snapshot5D.hour()), snapshot5D.stripTime()));
+			output.add(cheese(step + "", target));
+			output.add("core.wait(0.01);");
 		}
+		return output;
 	}
 
-	public static void action(String command) {
-		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpPost post = new HttpPost("http://192.168.99.64:8090/api/stelaction/do");
-			
-			// add header
-			List<NameValuePair> urlParameters = new ArrayList<>();
-			urlParameters.add(new BasicNameValuePair("id", command));
-			
-			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-			post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-			post.setHeader("Origin", "http://localhost:8090");
-			
-			client.execute(post);
+	public static String cheese(String filename, File target) {
+		if (!target.exists()) target.mkdirs();
+		return "core.screenshot(\"%s\",false,\"%s\",true);".formatted(filename, target.getAbsolutePath().replace("\\", "\\\\"));
+	}
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+//	public static void midpoint(LocalDateTime start, LocalDateTime end) throws IOException {
+//		long startDays = integerPart(julian(start));
+//		long endDays = integerPart(julian(end));
+//
+//		double startHours = fractionalPart(julian(start));
+//		double endHours = fractionalPart(julian(end));
+//
+//		Snapshot5D snapshot5D = Lerp5D.interpolateDirect(
+//				new Snapshot5D(145.9676, 9.1711, 16, startDays, startHours),
+//				new Snapshot5D(216.4507, 11.0995, 40, endDays, endHours),
+//				.5
+//		);
+//		setJD(snapshot5D.day() + snapshot5D.hour());
+//		//move(snapshot5D.alt(), snapshot5D.azi(), );
+//		zoom(snapshot5D.fov());
+//	}
+
+	public static ArrayList<String> move(double alt, double az, double fov) {
+		ArrayList<String> out = new ArrayList<>();
+		out.add("core.moveToAltAzi(%f, %f, 0.);".formatted(alt, az));
+		out.add("StelMovementMgr.zoomTo(%f,0);".formatted(fov));
+		return out;
+	}
+
+	public static ArrayList<String> move(LocalDateTime time, Snapshot3D orientation) {
+		ArrayList<String> out = new ArrayList<>();
+		out.add("core.moveToAltAzi(%f, %f, 0.);".formatted(orientation.alt(), orientation.azi()));
+		out.add("StelMovementMgr.zoomTo(%f,0);".formatted(orientation.fov()));
+		out.add("core.setDate(\"%s\");".formatted(time.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME)));
+		return out;
 	}
 
 
-	private static long integerPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.intValue();
-	};
-
-	private static double fractionalPart(double julian) {
-		BigDecimal temp = new BigDecimal(julian);
-		return temp.subtract(new BigDecimal(integerPart(julian))).doubleValue();
-	}
-
-	public static double EaseIn(double t)
-	{
-		return Math.pow(t,2);
-	}
-
-	static double Flip(double x)
-	{
-		return 1 - x;
-	}
-
-	public static double EaseOut(double t)
-	{
-		return Flip(Math.pow(Flip(t), 2));
-	}
-
-	public static double EaseInOut(double t)
-	{
-		return lerp(EaseIn(t), EaseOut(t), t);
-	}
-
-	// Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
-	// Lerping between same values might not produce the same value
-	public static double lerp(double v0, double v1, double t) {
-		return (1d - t) * v0 + t * v1;
-	}
 }
