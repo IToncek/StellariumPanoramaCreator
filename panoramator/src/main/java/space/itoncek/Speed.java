@@ -12,16 +12,16 @@
 package space.itoncek;
 
 public enum Speed {
-    STOP(0.0d),
-    NORMAL(0.000011574074074074073d);
+	STOP(0.0d),
+	NORMAL(0.000011574074074074073d);
 
-    private final double speed;
+	private final double speed;
 
-    Speed(double i) {
-        speed = i;
-    }
+	Speed(double i) {
+		speed = i;
+	}
 
-    public double getSpeed() {
-        return speed;
-    }
+	public double getSpeed() {
+		return speed;
+	}
 }

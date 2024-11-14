@@ -12,15 +12,15 @@
 package space.itoncek;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 public class DevTools {
-    public static void main(String[] args) throws Exception {
-        subtract();
+	public static void main(String[] args) throws Exception {
+		subtract();
 //		while (true) {
 //			System.out.println(MouseInfo.getPointerInfo().getLocation().x + " x " + MouseInfo.getPointerInfo().getLocation().y);
 //			sleep(1000);
@@ -66,46 +66,46 @@ public class DevTools {
 //			ImageIO.write(three,"png", new File("C:\\Users\\user\\Pictures\\digiCamControl\\landing\\downscale-binned\\3x3 - " + i + ".png"));
 //			i++;
 //		}
-    }
+	}
 
-    public static void subtract() throws IOException {
-        BufferedImage orig = ImageIO.read(new File("D:\\#astro\\astrometry\\jakub.jpeg"));
-        BufferedImage anot = ImageIO.read(new File("D:\\#astro\\astrometry\\jakub-ngc.png"));
-        BufferedImage fin = new BufferedImage(orig.getWidth(), orig.getHeight(), orig.getType());
+	public static void subtract() throws IOException {
+		BufferedImage orig = ImageIO.read(new File("D:\\#astro\\astrometry\\jakub.jpeg"));
+		BufferedImage anot = ImageIO.read(new File("D:\\#astro\\astrometry\\jakub-ngc.png"));
+		BufferedImage fin = new BufferedImage(orig.getWidth(), orig.getHeight(), orig.getType());
 
-        for (int y = 0; y < orig.getHeight(); y++) {
-            for (int x = 0; x < orig.getWidth(); x++) {
-                Color origC = new Color(orig.getRGB(x, y));
-                Color anotC = new Color(anot.getRGB(x, y));
-                int rdif = Math.abs(anotC.getRed() - origC.getRed()) % 255;
-                int gdif = Math.abs(anotC.getGreen() - origC.getGreen()) % 255;
-                int bdif = Math.abs(anotC.getBlue() - origC.getBlue()) % 255;
-                try {
-                    fin.setRGB(x, y, new Color(rdif, gdif, bdif).getRGB());
-                } catch (IllegalArgumentException e) {
-                    System.out.print(rdif);
-                    System.out.print(gdif);
-                    System.out.print(bdif);
-                }
-            }
-        }
-        ImageIO.write(fin, "png", new File("D:\\#astro\\astrometry\\jakub-ngcdiff.png"));
-    }
+		for (int y = 0; y < orig.getHeight(); y++) {
+			for (int x = 0; x < orig.getWidth(); x++) {
+				Color origC = new Color(orig.getRGB(x, y));
+				Color anotC = new Color(anot.getRGB(x, y));
+				int rdif = Math.abs(anotC.getRed() - origC.getRed()) % 255;
+				int gdif = Math.abs(anotC.getGreen() - origC.getGreen()) % 255;
+				int bdif = Math.abs(anotC.getBlue() - origC.getBlue()) % 255;
+				try {
+					fin.setRGB(x, y, new Color(rdif, gdif, bdif).getRGB());
+				} catch (IllegalArgumentException e) {
+					System.out.print(rdif);
+					System.out.print(gdif);
+					System.out.print(bdif);
+				}
+			}
+		}
+		ImageIO.write(fin, "png", new File("D:\\#astro\\astrometry\\jakub-ngcdiff.png"));
+	}
 
-    public static int average(List<Integer> colors) {
-        int totalR = 0;
-        int totalG = 0;
-        int totalB = 0;
-        int images = 0;
+	public static int average(List<Integer> colors) {
+		int totalR = 0;
+		int totalG = 0;
+		int totalB = 0;
+		int images = 0;
 
-        for (Integer color : colors) {
-            Color c = new Color(color);
-            totalR += c.getRed();
-            totalG += c.getGreen();
-            totalB += c.getBlue();
-            images++;
-        }
+		for (Integer color : colors) {
+			Color c = new Color(color);
+			totalR += c.getRed();
+			totalG += c.getGreen();
+			totalB += c.getBlue();
+			images++;
+		}
 
-        return new Color(totalR / images, totalG / images, totalB / images).getRGB();
-    }
+		return new Color(totalR / images, totalG / images, totalB / images).getRGB();
+	}
 }

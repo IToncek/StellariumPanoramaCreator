@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Panoramator {
 
@@ -42,7 +44,7 @@ public class Panoramator {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 //        command("StelMovementMgr.zoomTo(100,0)");
 //        move(20,270);
 //        command("core.moveToAltAzi(20., 270., 0.)");
@@ -53,6 +55,24 @@ public class Panoramator {
 //		}));
 		HashMap<String, List<String>> superscripts = new HashMap<>();
 
+		prosinecPopulate(superscripts);
+
+		ExecutorService es = Executors.newCachedThreadPool();
+		superscripts.forEach((filename, cmds) -> es.submit(() -> {
+			try (FileWriter fw = new FileWriter(filename + ".ssc")) {
+				for (String command : cmds) {
+					fw.write(command + "\n");
+				}
+				fw.write("core.quitStellarium();\n");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}));
+		es.shutdown();
+		es.close();
+	}
+
+	private static void prosinecPopulate(HashMap<String, List<String>> superscripts) {
 		File target = new File("X:\\AC Prosinec\\footage\\");
 		target.mkdirs();
 
@@ -60,7 +80,7 @@ public class Panoramator {
 
 		ArrayList<String> commands = new ArrayList<>(setup());
 
-		//------------------------------------------------------------------------------------------------------------------------------------------------
+//		//------------------------------------------------------------------------------------------------------------------------------------------------
 		String sequence = "0000";
 		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(276.5888, 28.4216, 72.8)));
 		commands.add("core.wait(1);");
@@ -81,8 +101,8 @@ public class Panoramator {
 
 		//------------------------------------------------------------------------------------------------------------------------------------------------
 		sequence = "0001";
-//		commands.addAll(showConstellations(List.of(Constellation.Lyr, Constellation.Cyg, Constellation.Aql)));
-//		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(276.5888, 28.4216, 72.8), new Snapshot3D(307.4430, 16.0075, 37.4), null));
+		commands.addAll(showConstellations(List.of(Constellation.Lyr, Constellation.Cyg, Constellation.Aql)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 18, 30, 0), steps, new Snapshot3D(276.5888, 28.4216, 72.8), new Snapshot3D(307.4430, 16.0075, 37.4), null));
 
 		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 18, 30, 0), new Snapshot3D(307.4430, 16.0075, 37.4)));
 
@@ -137,14 +157,14 @@ public class Panoramator {
 		//------------------------------------------------------------------------------------------------------------------------------------------------
 		sequence = "0004";
 		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per)));
-		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(67.7101, 80, 70), new Snapshot3D(180.2523, 68.6574, 55), null));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(67.7101, 80, 70), new Snapshot3D(205.3829, 62.9077, 65), null));
 
-		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(180.2523, 68.6574, 55)));
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(205.3829, 62.9077, 65)));
 
 		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per)));
 		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
-		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per, Constellation.Peg)));
-		commands.add(cheese(sequence + "_c_new", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Peg)));
+		commands.add(cheese(sequence + "_c_peg", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(clearConstellations());
 		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
 
@@ -156,9 +176,9 @@ public class Panoramator {
 		//------------------------------------------------------------------------------------------------------------------------------------------------
 		sequence = "0005";
 		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per, Constellation.Peg)));
-		commands.addAll(slideTo(new File(target + "\\" + sequence ), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(180.2523, 68.6574, 55), new Snapshot3D(181.1800, 43.1769, 70), null));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 19, 30, 0), steps, new Snapshot3D(205.3829, 62.9077, 65), new Snapshot3D(198.4649, 39.1161, 86), null));
 
-		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(181.1800, 43.1769, 70)));
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 19, 30, 0), new Snapshot3D(198.4649, 39.1161, 86)));
 		commands.addAll(showConstellations(List.of(Constellation.Cep, Constellation.Cas, Constellation.And, Constellation.Per, Constellation.Peg)));
 		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(showGround(false));
@@ -166,6 +186,8 @@ public class Panoramator {
 		commands.add(cheese(sequence + "_c_psc", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(showConstellations(List.of(Constellation.Aqr)));
 		commands.add(cheese(sequence + "_c_aqr", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Cet)));
+		commands.add(cheese(sequence + "_c_cet", new File(target.getAbsolutePath() + "\\" + "stills")));
 		commands.addAll(clearConstellations());
 		commands.addAll(showGround(true));
 		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
@@ -181,26 +203,169 @@ public class Panoramator {
 
 		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(166.0080, 77.3050, 30)));
 
-		commands.addAll(showConstellations(List.of(Constellation.Psc)));
+		commands.addAll(showConstellations(List.of(Constellation.Aur)));
 		commands.add(cheese(sequence + "_c_aur", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
 		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
 
 		superscripts.put(sequence, commands.stream().toList());
 
 		commands.clear();
 		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0007";
+		commands.addAll(showConstellations(List.of(Constellation.Aur)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(166.0080, 77.3050, 30), new Snapshot3D(201.0845, 66.8315, 52), null));
 
-		superscripts.forEach((filename, cmds) -> {
-			try (FileWriter fw = new FileWriter(filename + ".ssc")) {
-				for (String command : cmds) {
-					fw.write(command + "\n");
-					System.out.println(filename + " >> " + command);
-				}
-				fw.write("core.quitStellarium();\n");
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		});
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(201.0845, 66.8315, 52)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur)));
+		commands.add(cheese(sequence + "_c_aur", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Tau)));
+		commands.add(cheese(sequence + "_c_tau", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0008";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(201.0845, 66.8315, 52), new Snapshot3D(166.3988, 57.5968, 70), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(166.3988, 57.5968, 70)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau)));
+		commands.addAll(showGround(false));
+		commands.add(cheese(sequence + "_c_old", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.CMi)));
+		commands.add(cheese(sequence + "_c_cmi", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Gem)));
+		commands.add(cheese(sequence + "_c_gem", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_ori", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear_ng", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(true));
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0009";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(166.3988, 57.5968, 70), new Snapshot3D(171.5850, 43.6764, 35), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(171.5850, 43.6764, 35)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem)));
+		commands.add(cheese(sequence + "_c_other", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_ori", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0010";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(171.5850, 43.6764, 35), new Snapshot3D(190, 30, 65), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(190, 30, 65)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_other", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Eri)));
+		commands.add(cheese(sequence + "_c_eri", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0011";
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori, Constellation.Eri)));
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), steps, new Snapshot3D(190, 30, 65), new Snapshot3D(190, 15, 100), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 15, 23, 30, 0), new Snapshot3D(190, 15, 100)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Aur, Constellation.Tau, Constellation.CMi, Constellation.Gem, Constellation.Ori)));
+		commands.add(cheese(sequence + "_c_other", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Eri)));
+		commands.add(cheese(sequence + "_c_eri", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.CMa)));
+		commands.add(cheese(sequence + "_c_cma", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0012";
+		commands.addAll(clearConstellations());
+		commands.addAll(showGround(false));
+		commands.addAll(slideTo(new File(target + "\\" + sequence + "_ng"), LocalDateTime.of(2024, 12, 15, 23, 30, 0), LocalDateTime.of(2024, 12, 16, 7, 0, 0), steps, new Snapshot3D(190, 15, 100), new Snapshot3D(260, 34, 60), null));
+		commands.addAll(showConstellations(List.of()));
+		commands.addAll(showGround(true));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 15, 23, 30, 0), LocalDateTime.of(2024, 12, 16, 7, 0, 0), steps, new Snapshot3D(190, 15, 100), new Snapshot3D(260, 34, 60), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 16, 7, 0, 0), new Snapshot3D(260, 34, 60)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Cnc)));
+		commands.add(cheese(sequence + "c_cnc", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0013";
+		commands.addAll(showConstellations(List.of(Constellation.Cnc)));
+		commands.addAll(slideTo(new File(target + "\\" + sequence), LocalDateTime.of(2024, 12, 16, 7, 0, 0), steps, new Snapshot3D(260, 34, 60), new Snapshot3D(204,69,85), null));
+
+		commands.addAll(move(LocalDateTime.of(2024, 12, 16, 7, 0, 0), new Snapshot3D(204,69,85)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Leo)));
+		commands.add(cheese(sequence + "_c_leo", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Vir)));
+		commands.add(cheese(sequence + "_c_vir", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Boo)));
+		commands.add(cheese(sequence + "_c_boo", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.UMa)));
+		commands.add(cheese(sequence + "_c_uma", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.Com)));
+		commands.add(cheese(sequence + "_c_com", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showConstellations(List.of(Constellation.CVn)));
+		commands.add(cheese(sequence + "_c_cvn", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(false));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear_ng", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(showGround(true));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
 	}
 
 	private static Collection<String> showGround(boolean enabled) {
@@ -208,7 +373,7 @@ public class Panoramator {
 	}
 
 	private static List<String> setup() {
-		return List.of("ConstellationMgr.setArtFadeDuration(0.01);", "SolarSystem.setFlagPlanets(false);", "LandscapeMgr.setAtmosphereModel(\"ShowMySky\");","core.setGuiVisible(false);", "core.setTimeRate(0);","ConstellationMgr.setFlagLines(false);", "ConstellationMgr.setFlagArt(false);", "ConstellationMgr.setFlagIsolateSelected(true);", "core.wait(5);");
+		return List.of("ConstellationMgr.setArtFadeDuration(0.01);", "SolarSystem.setFlagPlanets(false);", "LandscapeMgr.setAtmosphereModel(\"ShowMySky\");", "core.setGuiVisible(false);", "core.setTimeRate(0);", "ConstellationMgr.setFlagLines(false);", "ConstellationMgr.setFlagArt(false);", "ConstellationMgr.setFlagIsolateSelected(true);", "core.wait(5);");
 	}
 
 	private static List<String> showConstellations(List<Constellation> constellations) {
@@ -225,7 +390,7 @@ public class Panoramator {
 	}
 
 	private static List<String> clearConstellations() {
-		return List.of("ConstellationMgr.deselectConstellations()","ConstellationMgr.setFlagLines(false);", "ConstellationMgr.setFlagArt(false);","core.wait(3);");
+		return List.of("ConstellationMgr.deselectConstellations()", "ConstellationMgr.setFlagLines(false);", "ConstellationMgr.setFlagArt(false);", "core.wait(3);");
 	}
 
 //    private static boolean isScriptRunning() {
