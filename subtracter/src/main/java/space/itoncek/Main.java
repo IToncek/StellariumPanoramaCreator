@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		File dir = new File("D:\\#projekty\\#sources\\meteority\\perseid\\b");
+		File dir = new File("D:\\#projekty\\#sources\\meteority\\geminidy\\c");
 
 		//DO NOT EDIT BELOW THIS LINE
 

@@ -366,6 +366,18 @@ public class Panoramator {
 
 		commands.clear();
 		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "geminids";
+		commands.addAll(move(LocalDateTime.of(2024, 12, 14, 22, 0, 0), new Snapshot3D(89,44,100)));
+
+		commands.addAll(showConstellations(List.of(Constellation.Gem)));
+		commands.add(cheese(sequence + "_c_gem", new File(target.getAbsolutePath() + "\\" + "stills")));
+		commands.addAll(clearConstellations());
+		commands.add(cheese(sequence + "_clear", new File(target.getAbsolutePath() + "\\" + "stills")));
+		superscripts.put(sequence, commands.stream().toList());
+
+		commands.clear();
+		commands.addAll(setup());
 	}
 
 	private static Collection<String> showGround(boolean enabled) {
