@@ -11,6 +11,7 @@ import java.time.ZoneOffset;
 
 public class Lerp5D {
 	public static @NotNull Snapshot5D interpolateDirect(@NotNull Snapshot5D start, @NotNull Snapshot5D end, double ratio) {
+//		double eased = ratio;
 		double eased = EaseInOut(ratio);
 
 		double azi = lerp(start.azi(), end.azi(), eased);

@@ -15,13 +15,14 @@ public class Lerp {
 	}
 
 	public static double EaseInOut(double t) {
+		// ((1 - t) * (t * t)) + (t * 1 - ((1-t)*(1-t)))
 		return lerp(EaseIn(t), EaseOut(t), t);
 	}
 
-	// Precise method, which guarantees v = v1 when t = 1. This method is monotonic only when v0 * v1 < 0.
+	// Precise method, which guarantees v = b when t = 1. This method is monotonic only when a * b < 0.
 	// Lerping between same values might not produce the same value
-	public static double lerp(double v0, double v1, double t) {
-		return (1d - t) * v0 + t * v1;
+	public static double lerp(double a, double b, double t) {
+		return (1d - t) * a + t * b;
 	}
 
 }
