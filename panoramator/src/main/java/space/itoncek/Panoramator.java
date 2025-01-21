@@ -11,7 +11,6 @@
 
 package space.itoncek;
 
-import space.itoncek.lerper.Lerp2D;
 import space.itoncek.lerper.Lerp3D;
 import space.itoncek.lerper.Lerp5D;
 import space.itoncek.lerper.Snapshot5D;
@@ -169,13 +168,177 @@ public class Panoramator {
 				"Mars",
 				"Mars",
 				60,
-				15));
+				20));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0005";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 2, 9, 20, 30, 0),
+				LocalDateTime.of(2025, 3, 14, 5, 0, 0),
+				steps,
+				"Mars",
+				"Moon",
+				20,
+				3));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0006";
+		commands.addAll(clearConstellations());
+		commands.addAll(slideTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 3, 14, 5, 0, 0),
+				LocalDateTime.of(2025, 3, 14, 6, 16, 30),
+				steps*2,
+				"Moon",
+				3));
+
+		commands.add(cheese(sequence + "_end", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0006-hurricane";
+		commands.addAll(clearConstellations());
+		commands.addAll(slideTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 3, 14, 5, 0, 0),
+				LocalDateTime.of(2025, 3, 14, 6, 16, 30),
+				steps*2,
+				"Moon",
+				3));
+
+		commands.add(cheese(sequence + "_end", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0007";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 3, 14, 6, 16, 30),
+				LocalDateTime.of(2025, 3, 29, 11, 0, 0),
+				steps,
+				"Moon",
+				"Moon",
+				3,
+				84));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0008";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 3, 29, 11, 0, 0),
+				LocalDateTime.of(2025, 3, 29, 11, 0, 0),
+				steps,
+				"Moon",
+				"Sun",
+				84,
+				3));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0009";
+		commands.addAll(clearConstellations());
+		commands.addAll(slideTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 3, 29, 11, 0, 0),
+				LocalDateTime.of(2025, 3, 29, 13, 30, 0),
+				steps,
+				"Sun",
+				3));
+
+		commands.add(cheese(sequence + "_end", new File(target.getAbsolutePath() + "\\" + "stills")));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0010";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 3, 29, 13, 30, 0),
+				LocalDateTime.of(2025, 4, 1, 22, 0, 0),
+				steps,
+				"Sun",
+				"Pleiades",
+				3,
+				60));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0011";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 4, 1, 22, 0, 0),
+				LocalDateTime.of(2025, 4, 1, 22, 0, 0),
+				steps,
+				"Pleiades",
+				"Pleiades",
+				60,
+				5));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0012";
+		commands.addAll(clearConstellations());
+		commands.addAll(slideTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 4, 1, 22, 0, 0),
+				LocalDateTime.of(2025, 4, 1, 23, 45, 0),
+				steps*2,
+				"Pleiades",
+				5));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0013";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 4, 1, 23, 45, 0),
+				LocalDateTime.of(2025, 4, 23, 4, 0, 0),
+				steps,
+				"Pleiades",
+				"4 Aql",
+				5,
+				100));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0014";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 4, 23, 4, 0, 0),
+				LocalDateTime.of(2025, 8, 11, 23, 0, 0),
+				steps,
+				"4 Aql",
+				"M31",
+				100,
+				80));
 
 		superscripts.put(sequence, commands.stream().toList());
 		commands.clear();
 		commands.addAll(setup());
 		//------------------------------------------------------------------------------------------------------------------------------------------------
 	}
+
 
 	private static String target(String target) {
 		return "core.moveToObject(\"%s\",.1);".formatted(target);
@@ -585,19 +748,78 @@ public class Panoramator {
 		System.out.println(target.getAbsolutePath());
 		target.mkdirs();
 
-		output.add(setTime(start));
-		output.add("StelMovementMgr.zoomTo(%f,0);".formatted(zoom));
-		output.add(target(targetObject));
-		output.add("core.wait(3);");
-		for (long step = 0; step <= steps; step++) {
-			LocalDateTime lerptime = Lerp2D.interpolateDirect(start, end, (double) step / steps);
-			//captureTimestamp(new File(target + "/timestamp/"), unJulian(snapshot5D.day() + snapshot5D.hour()), step);
-			output.add(target(targetObject));
-			output.add(setTime(lerptime));
-			output.add(cheese("%04d".formatted(step), target));
-			output.add("core.wait(0.001);");
-		}
+		output.add("""
+				function lerpsmooth(start, end, t)
+				{
+				    var t2 = lerp(Math.pow(t,2), 1 - Math.pow(1-t,2), t);
+					return lerp(start,end,t2);
+				}
+				
+				function lerp(a, b, t)
+				{
+				    return (1 - t) * a + t * b;
+				}
+				
+				function int(a)
+				{
+				    return Math.floor(a);
+				}
+				
+				function frac(a) {
+				    return a - int(a);
+				}
+				
+				""");
+
+		output.add("""
+				var object = "%s";
+				""".formatted(targetObject));
+
+		output.add("""
+				var fov = %f;
+				""".formatted(zoom));
+
+		output.add("""
+				var startTime = core.jdFromDateString("%s", "utc");
+				var endTime = core.jdFromDateString("%s", "utc");
+				""".formatted(timeToString(start), timeToString(end)));
+
+		output.add("""
+				
+				var startDay = int(startTime);
+				var endDay = int(endTime);
+				
+				var startHour = frac(startTime);
+				var endHour = frac(endTime);
+				""");
+
+		output.add("""
+				var steps = %d;
+				""".formatted(steps));
+
+		output.add("""
+				core.moveToObject(object, 0.);
+				StelMovementMgr.zoomTo(fov,0);
+				core.setJDay(startTime);
+				core.wait(3);
+				
+				for(var i = 0; i < steps; i++) {
+					var t = i/steps;
+					var day = Math.floor(lerpsmooth(startDay+.5, endDay+.5, t));
+					var hour = lerpsmooth(startHour, endHour, t);
+					core.setJDay(day+hour);
+					core.moveToObject(object, 0.);
+					core.wait(0.01);
+				""");
+		output.add("""
+					core.screenshot((""+i).padStart(4,"0"),false,"%s",true,"jpeg");
+				}
+				""".formatted(target.getAbsolutePath().replace("\\", "\\\\")));
 		return output;
+	}
+
+	private static String timeToString(LocalDateTime time) {
+		return ZonedDateTime.of(time,ZoneId.of("Europe/Prague")).withZoneSameInstant(ZoneId.of("UTC")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 	}
 
 	private static Collection<String> travelTrack(File target, LocalDateTime start, LocalDateTime end, long steps, String sourceObject, String targetObject, double startZoom, double endZoom) {
@@ -638,10 +860,11 @@ public class Panoramator {
 				var endFov = %f;
 				""".formatted(startZoom,endZoom));
 
+
 		output.add("""
 				var startTime = core.jdFromDateString("%s", "utc");
 				var endTime = core.jdFromDateString("%s", "utc");
-				""".formatted(start.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME),end.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME)));
+				""".formatted(timeToString(start), timeToString(end)));
 
 		output.add("""
 				
@@ -669,7 +892,10 @@ public class Panoramator {
 				""".formatted(steps));
 
 		output.add("""
-				core.wait(0.5);
+				core.moveToObject(startObject, 0.);
+				StelMovementMgr.zoomTo(startFov,0);
+				core.setJDay(startTime);
+				core.wait(3);
 				
 				for(var i = 0; i < steps; i++) {
 					var t = i/steps;
@@ -712,7 +938,7 @@ public class Panoramator {
 	}
 
 	private static String setTime(LocalDateTime time) {
-		return "core.setDate(\"%s\");".formatted(time.minusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
+		return "core.setDate(\"%s\");".formatted(timeToString(time));
 	}
 
 	public static ArrayList<String> slideTo(File target, LocalDateTime start, LocalDateTime end, long steps, Snapshot3D in, Snapshot3D out, Double midZoom) {
