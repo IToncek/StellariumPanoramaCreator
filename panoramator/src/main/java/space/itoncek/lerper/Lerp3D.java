@@ -8,7 +8,6 @@ import static space.itoncek.lerper.Lerp.lerp;
 public class Lerp3D {
 	public static @NotNull Snapshot3D interpolateDirect(@NotNull Snapshot3D start, @NotNull Snapshot3D end, double ratio) {
 		double eased = EaseInOut(ratio);
-
 		double azi = lerp(start.azi(), end.azi(), eased);
 		double alt = lerp(start.alt(), end.alt(), eased);
 		double fov = lerp(start.fov(), end.fov(), eased);
