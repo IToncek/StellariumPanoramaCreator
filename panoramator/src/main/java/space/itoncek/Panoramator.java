@@ -55,7 +55,8 @@ public class Panoramator {
 		HashMap<String, List<String>> superscripts = new HashMap<>();
 
 		//maturitniPracePopulate(superscripts);
-		populate2025(superscripts);
+		populate2025_part1(superscripts);
+		populate2025_part2(superscripts);
 
 		ExecutorService es = Executors.newCachedThreadPool();
 		superscripts.forEach((filename, cmds) -> es.submit(() -> {
@@ -72,7 +73,228 @@ public class Panoramator {
 		es.close();
 	}
 
-	private static void populate2025(HashMap<String, List<String>> superscripts) {
+	private static void populate2025_part2(HashMap<String, List<String>> superscripts) {
+		File target = new File("X:\\AC 2025\\footage");
+		target.mkdirs();
+
+		long steps = 500;
+
+		ArrayList<String> commands = new ArrayList<>(setup());
+
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		String sequence = "0021";
+		commands.addAll(clearConstellations());
+
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 10, 22, 5, 30, 0),
+				LocalDateTime.of(2025, 11, 17, 6, 15, 0),
+				steps,
+				"HIP 30363",
+				"HD 87550",
+				70,
+				100));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0022";
+		commands.addAll(clearConstellations());
+
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 11, 17, 6, 15, 0),
+				LocalDateTime.of(2025, 12, 13, 3, 0, 0),
+				steps,
+				"HD 87550",
+				"SAO 60020",
+				100,
+				100));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0023";
+		commands.addAll(clearConstellations());
+
+		commands.addAll(changeLandscape("Turnovska Hvezdarna"));
+		commands.addAll(travelTrack(new File(target + "\\" + sequence + "\\turnov"),
+				LocalDateTime.of(2025, 12, 13, 3, 0, 0),
+				LocalDateTime.of(2025,3,1,18,0,0),
+				steps,
+				"SAO 60020",
+				"Mercury",
+				100,
+				60));
+
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(travelTrack(new File(target + "\\" + sequence + "\\garching"),
+				LocalDateTime.of(2025, 12, 13, 3, 0, 0),
+				LocalDateTime.of(2025,3,1,18,0,0),
+				steps,
+				"SAO 60020",
+				"Mercury",
+				100,
+				30));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "mercury1";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,3,1,18,0,0),
+				LocalDateTime.of(2025,3,17,19,0,0),
+				"Mercury",
+				30,
+				.00647,
+				steps/2));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "mercury2";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,6,8,21,30,0),
+				LocalDateTime.of(2025,7,6,22,0,0),
+				"Mercury",
+				30,
+				.00378,
+				steps/2));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "mercury3";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,8,13,5,20,0),
+				LocalDateTime.of(2025,9,3,6,0,0),
+				"Mercury",
+				20,
+				.00449,
+				steps/2));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "mercury4";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,11,27,6,50,0),
+				LocalDateTime.of(2025,12,24,7,20,0),
+				"Mercury",
+				30,
+				.00527,
+				steps/2));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "venus1";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,1,1,18,50,0),
+				LocalDateTime.of(2025,3,17,18,50,0),
+				"Venus",
+				30,
+				.0245,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "venus2";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,5,23,4,0,0),
+				LocalDateTime.of(2025,11,22,7,0,0),
+				"Venus",
+				30,
+				.0103,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "mars";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,1,1,21,22,22),
+				LocalDateTime.of(2025,7,3,22,22,22),
+				"Mars",
+				80,
+				.00735,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "jupiter1";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,1,1,20,50,0),
+				LocalDateTime.of(2025,5,30,21,50,0),
+				"Jupiter",
+				110,
+						.02,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "jupiter2";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,8,1,4,0,0),
+				LocalDateTime.of(2025,12,31,3,0,0),
+				"Jupiter",
+				83,
+						.0169,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "saturn1";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,1,1,18,30,0),
+				LocalDateTime.of(2025,2,13,18,30,0),
+				"Saturn",
+				30,
+						.0143,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "saturn2";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Garching"));
+		commands.addAll(planetRenderer(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025,5,25,3,30,0),
+				LocalDateTime.of(2025,12,31,20,0,0),
+				"Saturn",
+				30,
+						.0143,
+				steps));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+	}
+
+	private static void populate2025_part1(HashMap<String, List<String>> superscripts) {
 		File target = new File("X:\\AC 2025\\footage");
 		target.mkdirs();
 
@@ -337,6 +559,116 @@ public class Panoramator {
 		commands.clear();
 		commands.addAll(setup());
 		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0015";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 8, 11, 23, 0, 0),
+				LocalDateTime.of(2025, 8, 12, 3, 15, 0),
+				steps,
+				"M31",
+				"HD 54017",
+				80,
+			40));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0016";
+		commands.addAll(clearConstellations());
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 8, 12, 3, 15, 0),
+				LocalDateTime.of(2025, 8, 20, 3, 30, 0),
+				steps,
+				"HD 54017",
+				"55 Gem",
+				40,
+			20));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0017";
+		commands.addAll(clearConstellations());
+		commands.addAll(changeLandscape("Turnovska Hvezdarna"));
+		commands.addAll(travelTrack(new File(target + "\\" + sequence + "-a"),
+				LocalDateTime.of(2025, 8, 20, 3, 30, 0),
+				LocalDateTime.of(2025, 9, 7, 19, 30, 0),
+				steps,
+				"55 Gem",
+				"Moon",
+				20,
+				1));
+
+		commands.addAll(changeLandscape("Zero Horizon"));
+
+		commands.addAll(travelTrack(new File(target + "\\" + sequence + "-b"),
+				LocalDateTime.of(2025, 8, 20, 3, 30, 0),
+				LocalDateTime.of(2025, 9, 7, 19, 30, 0),
+				steps,
+				"55 Gem",
+				"Moon",
+				20,
+			1));
+		commands.addAll(changeLandscape("Turnovska Hvezdarna"));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0018";
+		commands.addAll(clearConstellations());
+
+		commands.addAll(changeLandscape("Zero Horizon"));
+		commands.addAll(slideTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 9, 7, 19, 30, 0),
+				LocalDateTime.of(2025, 9, 7, 22, 0, 0),
+				steps*2,
+				"Moon",
+				1));
+
+		commands.addAll(changeLandscape("Turnovska Hvezdarna"));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0019";
+		commands.addAll(clearConstellations());
+
+		commands.addAll(changeLandscape("Turnovska Hvezdarna"));
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 9, 7, 22, 0, 0),
+				LocalDateTime.of(2025, 9, 12, 21, 45, 0),
+				steps,
+				"Moon",
+				"Moon",
+				1,
+				15));
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+		sequence = "0020";
+		commands.addAll(clearConstellations());
+
+		commands.addAll(changeLandscape("Turnovska Hvezdarna"));
+		commands.addAll(slideTrack(new File(target + "\\" + sequence),
+				LocalDateTime.of(2025, 9, 12, 21, 45, 0),
+				LocalDateTime.of(2025, 9, 13, 0, 45, 0),
+				steps*2,
+				"Moon",
+				15));
+
+		superscripts.put(sequence, commands.stream().toList());
+		commands.clear();
+		commands.addAll(setup());
+		//------------------------------------------------------------------------------------------------------------------------------------------------
+	}
+
+	private static Collection<String> changeLandscape(String zeroHorizon) {
+		return List.of("LandscapeMgr.setCurrentLandscapeName(\"%s\", 0.0);".formatted(zeroHorizon), "core.wait(3);");
 	}
 
 
@@ -742,6 +1074,82 @@ public class Panoramator {
 //    }
 
 
+
+	private static Collection<String> planetRenderer(File target, LocalDateTime start, LocalDateTime end, String planet, double widezoom, double narrowzoom, long steps) {
+		ArrayList<String> output = new ArrayList<>();
+		output.addAll(slideTrack(new File(target + "\\wide"), start, end, steps, planet, widezoom));
+		output.addAll(showGround(false));
+		output.addAll(showAtmo(false));
+		output.addAll(directSlideTrack(new File(target + "\\narrow"), start, end, steps, planet, narrowzoom));
+		output.addAll(showGround(true));
+		return output;
+	}
+
+	private static Collection<String> directSlideTrack(File target, LocalDateTime start, LocalDateTime end, long steps, String targetObject, double zoom) {
+		ArrayList<String> output = new ArrayList<>();
+		System.out.println(target.getAbsolutePath());
+		target.mkdirs();
+
+		output.add("""
+				function lerpsmooth(start, end, t)
+				{
+				    var t2 = lerp(Math.pow(t,2), 1 - Math.pow(1-t,2), t);
+					return lerp(start,end,t2);
+				}
+				
+				function lerp(a, b, t)
+				{
+				    return (1 - t) * a + t * b;
+				}
+				
+				function int(a)
+				{
+				    return Math.floor(a);
+				}
+				
+				function frac(a) {
+				    return a - int(a);
+				}
+				
+				""");
+
+		output.add("""
+				var object = "%s";
+				""".formatted(targetObject));
+
+		output.add("""
+				var fov = %f;
+				""".formatted(zoom));
+
+		output.add("""
+				var startTime = core.jdFromDateString("%s", "utc");
+				var endTime = core.jdFromDateString("%s", "utc");
+				""".formatted(timeToString(start), timeToString(end)));
+
+		output.add("""
+				var steps = %d;
+				""".formatted(steps));
+
+		output.add("""
+				core.moveToObject(object, 0.);
+				StelMovementMgr.zoomTo(fov,0);
+				core.setJDay(startTime);
+				core.wait(3);
+				core.setMountMode("equatorial");
+				
+				for(var i = 0; i < steps; i++) {
+					var t = i/steps;
+					var time = lerpsmooth(startTime, endTime, t);
+					core.setJDay(time);
+					core.moveToObject(object, 0.);
+					core.wait(0.01);
+				""");
+		output.add("""
+					core.screenshot((""+i).padStart(4,"0"),false,"%s",true,"jpeg");
+				}
+				""".formatted(target.getAbsolutePath().replace("\\", "\\\\")));
+		return output;
+	}
 
 	private static Collection<String> slideTrack(File target, LocalDateTime start, LocalDateTime end, long steps, String targetObject, double zoom) {
 		ArrayList<String> output = new ArrayList<>();
