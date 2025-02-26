@@ -119,17 +119,17 @@ public class Panoramator {
 		commands.addAll(travelTrack(new File(target + "\\" + sequence + "\\turnov"),
 				LocalDateTime.of(2025, 12, 13, 3, 0, 0),
 				LocalDateTime.of(2025,3,1,18,0,0),
-				steps,
+				steps*2,
 				"SAO 60020",
 				"Mercury",
 				100,
-				60));
+				30));
 
 		commands.addAll(changeLandscape("Garching"));
 		commands.addAll(travelTrack(new File(target + "\\" + sequence + "\\garching"),
 				LocalDateTime.of(2025, 12, 13, 3, 0, 0),
 				LocalDateTime.of(2025,3,1,18,0,0),
-				steps,
+				steps*2,
 				"SAO 60020",
 				"Mercury",
 				100,
@@ -231,7 +231,7 @@ public class Panoramator {
 				"Mars",
 				80,
 				.00735,
-				steps));
+				Math.round(steps*2.5)));
 		superscripts.put(sequence, commands.stream().toList());
 		commands.clear();
 		commands.addAll(setup());
@@ -287,7 +287,7 @@ public class Panoramator {
 				"Saturn",
 				30,
 						.0143,
-				steps));
+				steps*2));
 		superscripts.put(sequence, commands.stream().toList());
 		commands.clear();
 		commands.addAll(setup());
@@ -318,13 +318,15 @@ public class Panoramator {
 		//------------------------------------------------------------------------------------------------------------------------------------------------
 		sequence = "0001";
 		commands.addAll(clearConstellations());
-		commands.addAll(slideTo(new File(target + "\\" + sequence),
+
+		commands.addAll(travelTrack(new File(target + "\\" + sequence),
 				LocalDateTime.of(2025, 1, 3, 3, 0, 0),
 				LocalDateTime.of(2025, 1, 4, 18, 0, 0),
 				steps,
-				new Snapshot3D(57.8889, 40.0415, 100),
-				new Snapshot3D(211.3386, 26.8404, .5),
-				50.));
+				"HIP 74433 A",
+				"Saturn",
+				100,
+				.5));
 
 		commands.add(cheese(sequence + "_end", new File(target.getAbsolutePath() + "\\" + "stills")));
 
@@ -1077,11 +1079,12 @@ public class Panoramator {
 
 	private static Collection<String> planetRenderer(File target, LocalDateTime start, LocalDateTime end, String planet, double widezoom, double narrowzoom, long steps) {
 		ArrayList<String> output = new ArrayList<>();
-		output.addAll(slideTrack(new File(target + "\\wide"), start, end, steps, planet, widezoom));
 		output.addAll(showGround(false));
 		output.addAll(showAtmo(false));
 		output.addAll(directSlideTrack(new File(target + "\\narrow"), start, end, steps, planet, narrowzoom));
 		output.addAll(showGround(true));
+		output.addAll(showAtmo(true));
+		output.addAll(slideTrack(new File(target + "\\wide"), start, end, steps, planet, widezoom));
 		return output;
 	}
 
@@ -1147,6 +1150,7 @@ public class Panoramator {
 		output.add("""
 					core.screenshot((""+i).padStart(4,"0"),false,"%s",true,"jpeg");
 				}
+				core.setMountMode("azimuthal");
 				""".formatted(target.getAbsolutePath().replace("\\", "\\\\")));
 		return output;
 	}
